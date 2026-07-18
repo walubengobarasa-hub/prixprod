@@ -1,0 +1,61 @@
+# Git / docs
+.git/
+.github/
+.gitignore
+README.md
+*.md
+
+# Tests / local tools
+tests/
+test/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Notebook files
+*.ipynb
+.ipynb_checkpoints/
+
+# Raw data and training files
+dataset/
+datasets/
+raw_data/
+training_data/
+Model Data/
+*.csv
+
+# Local caches
+.cache/
+data/cache/
+data/tmp/
+tmp/
+temp/
+__pycache__/
+*.py[cod]
+
+# Local environments
+.venv/
+venv/
+env/
+ENV/
+
+# Logs
+*.log
+logs/
+
+# Local reports / exports
+reports/
+exports/
+outputs/
+
+# Archives
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# IDE files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

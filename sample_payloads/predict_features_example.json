@@ -1,0 +1,23 @@
+{
+  "league_slug": "epl",
+  "date": "2026-05-24",
+  "mode": "public",
+  "rows": [
+    {
+      "match_external_id": "demo_arsenal_chelsea",
+      "match_date": "2026-05-24",
+      "home_team": "Arsenal",
+      "away_team": "Chelsea",
+      "features": {
+        "BbAvH": 1.75,
+        "BbAvD": 3.6,
+        "BbAvA": 4.5,
+        "BbAv_2.5": 1.9,
+        "combined_last_10_over_1_5": 0.85,
+        "under15_risk_trend_last_3": 0.1,
+        "outcome_agreement_proxy": 94,
+        "btts_yes_proxy": 0.52
+      }
+    }
+  ]
+}

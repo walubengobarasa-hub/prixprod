@@ -1,0 +1,197 @@
+{
+  "league_slug": "korea",
+  "league_name": "Korea K League 1",
+  "league_code": "korea",
+  "competition_type": "main_league",
+  "model_family": "main_league",
+  "model_version": "korea-v0.4.2.2-champion-challenger-multimarket",
+  "model_mode": "odds_aware",
+  "feature_columns_file": "feature_columns.json",
+  "models": {
+    "over15": "korea_over15_base_prod_model.pkl",
+    "under15_risk": "korea_under15_risk_model.pkl",
+    "btts": "korea_btts_base_review_model.pkl",
+    "outcome": "korea_outcome_calibrated_model.pkl",
+    "favorite_win": "korea_favorite_win_support_model.pkl",
+    "favorite_avoid_defeat": "korea_favorite_avoid_defeat_support_model.pkl",
+    "over25": "korea_over25_base_review_model.pkl",
+    "under25_risk": "korea_under25_risk_model.pkl",
+    "draw_risk": "korea_draw_risk_support_model.pkl",
+    "over35_review": "korea_over35_review_model.pkl"
+  },
+  "market_rules": {
+    "double_chance": {
+      "public_threshold": 80,
+      "premium_threshold": 85,
+      "elite_threshold": 89,
+      "public_max_risk": 22.0,
+      "premium_max_risk": 15.0,
+      "elite_max_risk": 11.0,
+      "public_min_favorite_avoid_prob": 0.84,
+      "premium_min_favorite_avoid_prob": 0.88,
+      "elite_min_favorite_avoid_prob": 0.9,
+      "max_draw_risk": 38.0,
+      "status": "active",
+      "min_agreement": 60
+    },
+    "over_1_5": {
+      "public_threshold": 70,
+      "premium_threshold": 80,
+      "elite_threshold": 86,
+      "max_under15_risk_prob": 0.3,
+      "public_max_risk": 30.0,
+      "premium_max_risk": 22.0,
+      "elite_max_risk": 16.0,
+      "min_goal_floor_score": 64,
+      "heavy_favorite_trap_penalty": 8.0,
+      "status": "selective_support"
+    },
+    "over_2_5": {
+      "public_threshold": 84,
+      "premium_threshold": 86,
+      "elite_threshold": 88,
+      "max_under25_risk_prob": 0.45,
+      "public_max_risk": 45.0,
+      "premium_max_risk": 42.0,
+      "elite_max_risk": 39.0,
+      "min_goal_floor_score": 68,
+      "status": "review_only"
+    },
+    "btts": {
+      "public_threshold": 84,
+      "premium_threshold": 86,
+      "elite_threshold": 88,
+      "min_btts_floor": 64,
+      "max_fail_risk": 40,
+      "status": "review_only"
+    },
+    "match_outcome": {
+      "public_threshold": 84,
+      "premium_threshold": 86,
+      "elite_threshold": 88,
+      "public_max_draw_risk": 20.0,
+      "premium_max_draw_risk": 18.0,
+      "elite_max_draw_risk": 15.0,
+      "min_agreement": 90,
+      "min_favorite_win_prob": 0.72,
+      "min_favorite_avoid_prob": 0.88,
+      "allow_draw": false,
+      "status": "review_only"
+    },
+    "favorite_win": {
+      "status": "support_only"
+    },
+    "favorite_avoid_defeat": {
+      "status": "support_only"
+    },
+    "draw_risk": {
+      "status": "support_only"
+    },
+    "under_1_5": {
+      "status": "support_only"
+    },
+    "under_2_5": {
+      "status": "support_only"
+    }
+  },
+  "ticket_rules": {
+    "allow_cross_league_packaging": true,
+    "free_safe_ticket": {
+      "enabled": true,
+      "tier": "free",
+      "markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "over_2_5": 0,
+        "btts": 0,
+        "match_outcome": 0
+      },
+      "min_items": 3,
+      "max_items": 5,
+      "max_window_days": 3,
+      "min_avg_confidence": 86.0,
+      "max_avg_risk": 13.5
+    },
+    "premium_mixed_ticket": {
+      "enabled": true,
+      "tier": "premium",
+      "markets": [
+        "double_chance",
+        "over_1_5",
+        "over_2_5"
+      ],
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "over_2_5": 1,
+        "btts": 0,
+        "match_outcome": 0
+      },
+      "min_items": 3,
+      "max_items": 5,
+      "max_window_days": 3,
+      "min_avg_confidence": 87.0,
+      "max_avg_risk": 12.5
+    },
+    "elite_ticket": {
+      "enabled": true,
+      "tier": "elite",
+      "markets": [
+        "double_chance",
+        "over_1_5",
+        "over_2_5",
+        "match_outcome"
+      ],
+      "market_caps": {
+        "double_chance": 2,
+        "over_1_5": 1,
+        "over_2_5": 1,
+        "btts": 0,
+        "match_outcome": 1
+      },
+      "min_items": 2,
+      "max_items": 3,
+      "max_window_days": 3,
+      "min_avg_confidence": 88.0,
+      "max_avg_risk": 11.5
+    },
+    "single_match_insight": {
+      "min_confidence": 88.0,
+      "max_risk": 40.0,
+      "markets": [
+        "double_chance",
+        "over_1_5",
+        "over_2_5",
+        "btts",
+        "match_outcome"
+      ]
+    },
+    "cross_league_ticket": {
+      "enabled": true,
+      "tier": "premium",
+      "markets": [
+        "double_chance",
+        "over_1_5",
+        "over_2_5"
+      ],
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "over_2_5": 1,
+        "btts": 0,
+        "match_outcome": 0
+      },
+      "min_items": 3,
+      "max_items": 5,
+      "max_window_days": 3,
+      "min_avg_confidence": 87.0,
+      "max_avg_risk": 12.5
+    }
+  },
+  "disable_markets": [],
+  "notes": "Starter league v0.4.2.2 artifact integrated from Colab outputs. RF remains champion unless a selected-model export is provided later."
+}

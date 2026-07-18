@@ -1,0 +1,25 @@
+{
+  "league_slug": "ireland",
+  "version": "v0.6.4",
+  "recommended_metrics": [
+    "leakage_audit_pass",
+    "precision_at_threshold",
+    "brier_score",
+    "log_loss",
+    "calibration_bins",
+    "candidate_volume",
+    "ticket_simulation_accuracy",
+    "market_diversity",
+    "reason_code_coverage",
+    "top_factor_stability"
+  ],
+  "reason_code_map": {
+    "strong_goal_pressure_profile": "Recent combined scoring, xG and shot-on-target pressure is strong.",
+    "high_combined_recent_scoring": "Both teams have recently contributed enough goals to support a goal-floor market.",
+    "defensive_vulnerability_present": "Recent concessions suggest at least one side is vulnerable.",
+    "market_supports_clear_favorite": "Pre-match market probabilities indicate a clear favorite.",
+    "draw_risk_from_market_is_moderate": "Draw risk is not high enough to block the selection.",
+    "avoid_defeat_profile": "The chosen side has a stronger avoid-defeat profile than outright win profile."
+  },
+  "user_facing_guardrail": "Timing outputs are estimates based on historical profiles, not guarantees."
+}

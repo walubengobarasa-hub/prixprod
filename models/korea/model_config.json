@@ -1,0 +1,113 @@
+{
+  "league_slug": "korea",
+  "league_name": "Korea K League",
+  "competition_type": "main_league",
+  "model_family": "main_league",
+  "model_version": "korea-v0.6.4-explainable",
+  "model_mode": "odds_aware",
+  "feature_columns_file": "feature_columns.json",
+  "models": {
+    "over15": "korea_over15_base_prod_model.pkl",
+    "under15_risk": "korea_under15_risk_model.pkl",
+    "btts": "korea_btts_base_review_model.pkl",
+    "over25": "korea_over25_base_review_model.pkl",
+    "under25_risk": "korea_under25_risk_model.pkl",
+    "outcome": "korea_outcome_calibrated_model.pkl",
+    "favorite_win": "korea_favorite_win_support_model.pkl",
+    "favorite_avoid_defeat": "korea_favorite_avoid_defeat_support_model.pkl",
+    "draw_risk": "korea_draw_risk_support_model.pkl",
+    "first_goal_window": "korea_first_goal_window_model.pkl",
+    "winner_decision_window": "korea_winner_decision_window_model.pkl"
+  },
+  "market_rules": {
+    "double_chance": {
+      "status": "active_pending_threshold_review",
+      "public_threshold": 84,
+      "premium_threshold": 86,
+      "elite_threshold": 88,
+      "max_draw_risk": 34.0
+    },
+    "over_1_5": {
+      "status": "active_pending_threshold_review",
+      "public_threshold": 82,
+      "premium_threshold": 84,
+      "elite_threshold": 86,
+      "max_under15_risk_prob": 0.22
+    },
+    "over_2_5": {
+      "status": "review_only",
+      "public_threshold": 86
+    },
+    "btts": {
+      "status": "review_only",
+      "public_threshold": 86
+    },
+    "match_outcome": {
+      "status": "review_only",
+      "public_threshold": 86,
+      "max_per_ticket": 1
+    },
+    "favorite_win": {
+      "status": "support_only"
+    },
+    "favorite_avoid_defeat": {
+      "status": "support_only"
+    },
+    "draw_risk": {
+      "status": "support_only"
+    },
+    "first_goal_window": {
+      "status": "explainability_only"
+    },
+    "winner_decision_window": {
+      "status": "explainability_only"
+    }
+  },
+  "ticket_rules": {
+    "allow_cross_league_packaging": true,
+    "free_safe_ticket": {
+      "enabled": true,
+      "markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "min_items": 3,
+      "max_items": 5,
+      "max_window_days": 3,
+      "min_avg_confidence": 86.0
+    },
+    "premium_mixed_ticket": {
+      "enabled": true,
+      "markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "min_items": 3,
+      "max_items": 5,
+      "max_window_days": 3,
+      "min_avg_confidence": 87.0
+    },
+    "elite_ticket": {
+      "enabled": true,
+      "markets": [
+        "double_chance",
+        "over_1_5",
+        "match_outcome"
+      ],
+      "min_items": 2,
+      "max_items": 4,
+      "max_window_days": 3,
+      "min_avg_confidence": 88.0,
+      "market_caps": {
+        "match_outcome": 1
+      }
+    }
+  },
+  "explainability": {
+    "enabled": true,
+    "top_factors_count": 6,
+    "reason_codes_enabled": true,
+    "goal_timing_estimates_enabled": true,
+    "winner_decision_estimates_enabled": true
+  }
+}

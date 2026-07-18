@@ -1,0 +1,84 @@
+{
+  "league_slug": "epl",
+  "league_name": "English Premier League",
+  "model_version": "epl_v0.4",
+  "feature_columns_file": "feature_columns.json",
+  "models": {
+    "over15": "epl_over15_base_prod_model.pkl",
+    "under15_risk": "epl_under15_risk_model.pkl",
+    "btts": "epl_btts_base_review_model.pkl",
+    "outcome": "epl_outcome_calibrated_model.pkl",
+    "favorite_win": "epl_favorite_win_support_model.pkl",
+    "favorite_avoid_defeat": "epl_favorite_avoid_defeat_support_model.pkl"
+  },
+  "market_rules": {
+    "double_chance": {
+      "review_threshold": 80,
+      "public_threshold": 82,
+      "premium_threshold": 84,
+      "elite_threshold": 85,
+      "status": "active"
+    },
+    "over_1_5": {
+      "review_threshold": 78,
+      "public_threshold": 80,
+      "premium_threshold": 82,
+      "elite_threshold": 85,
+      "status": "active",
+      "max_under15_risk_public": 0.18
+    },
+    "match_outcome": {
+      "review_threshold": 78,
+      "public_threshold": 80,
+      "premium_threshold": 82,
+      "elite_threshold": 85,
+      "status": "selective",
+      "max_draw_risk_public": 20,
+      "min_agreement_public": 90,
+      "allow_draw": false
+    },
+    "btts": {
+      "status": "review_only",
+      "review_threshold": 75
+    }
+  },
+  "ticket_rules": {
+    "free_safe_ticket": {
+      "tier": "free",
+      "markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "min_items": 3,
+      "max_items": 5,
+      "min_avg_confidence": 82,
+      "max_avg_risk": 16,
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "match_outcome": 0
+      }
+    },
+    "elite_ticket": {
+      "tier": "elite",
+      "markets": [
+        "double_chance",
+        "over_1_5",
+        "match_outcome"
+      ],
+      "min_items": 2,
+      "max_items": 4,
+      "min_avg_confidence": 85,
+      "max_avg_risk": 13,
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "match_outcome": 1
+      }
+    },
+    "single_match_insight": {
+      "min_confidence": 85,
+      "max_risk": 13
+    }
+  }
+}

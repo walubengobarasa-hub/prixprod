@@ -1,0 +1,31 @@
+{
+  "league_slug": "poland",
+  "league_name": "Poland Ekstraklasa",
+  "model_version": "poland-v0.6.4-explainable",
+  "rows_total": 2954,
+  "train_rows": 2342,
+  "validation_rows": 306,
+  "test_rows": 306,
+  "seasons": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "odds_available_rate": 0.9732566012186865,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  }
+}

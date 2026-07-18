@@ -1,0 +1,445 @@
+{
+  "model_version": "estonia-v0.4.2.2-champion-challenger-multimarket",
+  "league_code": "estonia",
+  "league_slug": "estonia",
+  "league_name": "Estonia Meistriliiga",
+  "competition_type": "main_league",
+  "model_mode": "odds_aware",
+  "market_rules": {
+    "double_chance": {
+      "public_threshold": 88,
+      "premium_threshold": 90,
+      "elite_threshold": 92,
+      "public_max_risk": 12.0,
+      "premium_max_risk": 10.0,
+      "elite_max_risk": 8.5,
+      "public_min_favorite_avoid_prob": 0.88,
+      "premium_min_favorite_avoid_prob": 0.9,
+      "elite_min_favorite_avoid_prob": 0.92,
+      "max_draw_risk": 30.0,
+      "status": "active"
+    },
+    "over_1_5": {
+      "public_threshold": 75,
+      "premium_threshold": 82,
+      "elite_threshold": 86,
+      "max_under15_risk_prob": 0.25,
+      "public_max_risk": 18.0,
+      "premium_max_risk": 15.5,
+      "elite_max_risk": 13.0,
+      "min_goal_floor_score": 68,
+      "heavy_favorite_trap_penalty": 8.0,
+      "status": "selective_active"
+    },
+    "over_2_5": {
+      "public_threshold": 84,
+      "premium_threshold": 86,
+      "elite_threshold": 88,
+      "max_under25_risk_prob": 0.45,
+      "public_max_risk": 45.0,
+      "premium_max_risk": 42.0,
+      "elite_max_risk": 39.0,
+      "min_goal_floor_score": 68,
+      "status": "selective_review"
+    },
+    "btts": {
+      "public_threshold": 84,
+      "premium_threshold": 86,
+      "elite_threshold": 88,
+      "min_btts_floor": 64,
+      "max_fail_risk": 40,
+      "status": "review_selective"
+    },
+    "match_outcome": {
+      "public_threshold": 85,
+      "premium_threshold": 88,
+      "elite_threshold": 90,
+      "public_max_draw_risk": 22.0,
+      "premium_max_draw_risk": 19.0,
+      "elite_max_draw_risk": 16.0,
+      "min_agreement": 86,
+      "min_favorite_win_prob": 0.72,
+      "min_favorite_avoid_prob": 0.88,
+      "allow_draw": false,
+      "status": "selective_active"
+    }
+  },
+  "ticket_quality_rules": {
+    "free_safe_ticket": {
+      "eligible_col": "v04_public_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "over_2_5": 0,
+        "btts": 0,
+        "match_outcome": 0
+      },
+      "min_items": 3,
+      "max_items": 5,
+      "min_avg_confidence": 86.0,
+      "max_avg_risk": 13.5,
+      "max_low_confidence_items": 1,
+      "low_confidence_cutoff": 86.0
+    },
+    "premium_mixed_ticket": {
+      "eligible_col": "v04_premium_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5",
+        "over_2_5"
+      ],
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "over_2_5": 1,
+        "btts": 0,
+        "match_outcome": 0
+      },
+      "min_items": 3,
+      "max_items": 5,
+      "min_avg_confidence": 87.0,
+      "max_avg_risk": 12.5,
+      "max_low_confidence_items": 1,
+      "low_confidence_cutoff": 87.0
+    },
+    "elite_ticket": {
+      "eligible_col": "v04_elite_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5",
+        "over_2_5",
+        "match_outcome"
+      ],
+      "market_caps": {
+        "double_chance": 2,
+        "over_1_5": 1,
+        "over_2_5": 1,
+        "btts": 0,
+        "match_outcome": 1
+      },
+      "min_items": 2,
+      "max_items": 3,
+      "min_avg_confidence": 88.0,
+      "max_avg_risk": 11.5,
+      "max_low_confidence_items": 0,
+      "low_confidence_cutoff": 88.0
+    },
+    "single_match_insight": {
+      "eligible_col": "v04_elite_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5",
+        "over_2_5",
+        "btts",
+        "match_outcome"
+      ],
+      "market_caps": {
+        "double_chance": 1,
+        "over_1_5": 1,
+        "over_2_5": 1,
+        "btts": 1,
+        "match_outcome": 1
+      },
+      "min_items": 1,
+      "max_items": 1,
+      "min_avg_confidence": 88.0,
+      "max_avg_risk": 40.0,
+      "max_low_confidence_items": 0,
+      "low_confidence_cutoff": 88.0
+    }
+  },
+  "market_status": {
+    "double_chance": "active",
+    "over_1_5": "selective_active",
+    "over_2_5": "review",
+    "btts": "hold",
+    "match_outcome": "selective_active",
+    "favorite_win": "support_selective",
+    "favorite_avoid_defeat": "support_only",
+    "draw_risk": "support_only",
+    "under_1_5_risk": "support_only",
+    "under_2_5_risk": "support_only"
+  },
+  "league_gate_profile": {
+    "profile_note": "Production-ready starter league: keep gates strict; DC active, outcome/Over 1.5 selective.",
+    "market_status_overrides": {
+      "double_chance": "active",
+      "over_1_5": "selective_active",
+      "match_outcome": "selective_active",
+      "over_2_5": "review",
+      "btts": "hold"
+    },
+    "rules": {
+      "double_chance": {
+        "public_threshold": 88,
+        "premium_threshold": 90,
+        "elite_threshold": 92,
+        "public_max_risk": 12.0,
+        "premium_max_risk": 10.0,
+        "elite_max_risk": 8.5,
+        "public_min_favorite_avoid_prob": 0.88,
+        "premium_min_favorite_avoid_prob": 0.9,
+        "elite_min_favorite_avoid_prob": 0.92,
+        "max_draw_risk": 30.0
+      },
+      "over_1_5": {
+        "public_threshold": 75,
+        "premium_threshold": 82,
+        "elite_threshold": 86,
+        "max_under15_risk_prob": 0.25,
+        "min_goal_floor_score": 68,
+        "status": "selective_active"
+      },
+      "match_outcome": {
+        "public_threshold": 85,
+        "premium_threshold": 88,
+        "elite_threshold": 90,
+        "public_max_draw_risk": 22.0,
+        "premium_max_draw_risk": 19.0,
+        "elite_max_draw_risk": 16.0,
+        "min_agreement": 86,
+        "status": "selective_active"
+      }
+    }
+  },
+  "champion_challenger_selection": {
+    "over_1_5": {
+      "target": "over_1_5",
+      "market_role": "goals",
+      "algorithm": "rf",
+      "selection_score": 0.742967,
+      "test_accuracy": 0.8296703296703297,
+      "test_precision": 0.8296703296703297,
+      "test_f1": 0.9069069069069069,
+      "test_roc_auc": 0.6276436658833582,
+      "test_brier": 0.14013090436059966,
+      "test_log_loss": 0.45256933387919906,
+      "selected_for_candidates": true,
+      "calibrated": true,
+      "selected_algorithm": "rf",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "under_1_5": {
+      "target": "under_1_5",
+      "market_role": "risk",
+      "algorithm": "rf",
+      "selection_score": 0.354355,
+      "test_accuracy": 0.8296703296703297,
+      "test_precision": 0.0,
+      "test_f1": 0.0,
+      "test_roc_auc": 0.6276436658833583,
+      "test_brier": 0.13887365777007993,
+      "test_log_loss": 0.44824994139745306,
+      "selected_for_candidates": false,
+      "calibrated": false,
+      "selected_algorithm": "rf",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "over_2_5": {
+      "target": "over_2_5",
+      "market_role": "goals_review",
+      "algorithm": "rf",
+      "selection_score": 0.616876,
+      "test_accuracy": 0.6758241758241759,
+      "test_precision": 0.6758241758241759,
+      "test_f1": 0.8065573770491803,
+      "test_roc_auc": 0.5753066005236324,
+      "test_brier": 0.22786891633427417,
+      "test_log_loss": 0.6485401965839553,
+      "selected_for_candidates": true,
+      "calibrated": true,
+      "selected_algorithm": "rf",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "under_2_5": {
+      "target": "under_2_5",
+      "market_role": "risk",
+      "algorithm": "rf",
+      "selection_score": 0.431131,
+      "test_accuracy": 0.6428571428571429,
+      "test_precision": 0.4,
+      "test_f1": 0.2696629213483146,
+      "test_roc_auc": 0.5753066005236324,
+      "test_brier": 0.22414370809111644,
+      "test_log_loss": 0.639404322450673,
+      "selected_for_candidates": false,
+      "calibrated": false,
+      "selected_algorithm": "rf",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "over_3_5": {
+      "target": "over_3_5",
+      "market_role": "review",
+      "algorithm": "xgb",
+      "selection_score": 0.523424,
+      "test_accuracy": 0.6263736263736264,
+      "test_precision": 1.0,
+      "test_f1": 0.02857142857142857,
+      "test_roc_auc": 0.5661151725022445,
+      "test_brier": 0.24492333146963371,
+      "test_log_loss": 0.6915784990794687,
+      "selected_for_candidates": false,
+      "calibrated": false,
+      "selected_algorithm": "xgb",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "btts": {
+      "target": "btts",
+      "market_role": "btts_review",
+      "algorithm": "rf",
+      "selection_score": 0.545318,
+      "test_accuracy": 0.5934065934065934,
+      "test_precision": 0.6288659793814433,
+      "test_f1": 0.6224489795918368,
+      "test_roc_auc": 0.5953511013751978,
+      "test_brier": 0.24681736136891994,
+      "test_log_loss": 0.6867730655913082,
+      "selected_for_candidates": true,
+      "calibrated": true,
+      "selected_algorithm": "rf",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "outcome": {
+      "target": "outcome",
+      "market_role": "outcome",
+      "algorithm": "xgb",
+      "selection_score": 0.487631,
+      "test_accuracy": 0.6648351648351648,
+      "test_macro_precision": 0.536773813947727,
+      "test_macro_f1": 0.5185320678278424,
+      "test_log_loss": 0.8243573535057483,
+      "calibrated": false,
+      "selected_algorithm": "xgb",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "favorite_won": {
+      "target": "favorite_won",
+      "market_role": "support",
+      "algorithm": "xgb",
+      "selection_score": 0.629359,
+      "test_accuracy": 0.6538461538461539,
+      "test_precision": 0.7028985507246377,
+      "test_f1": 0.754863813229572,
+      "test_roc_auc": 0.6754701880752301,
+      "test_brier": 0.20776218913527086,
+      "test_log_loss": 0.5982803433460079,
+      "selected_for_candidates": false,
+      "calibrated": false,
+      "selected_algorithm": "xgb",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "favorite_avoid_defeat": {
+      "target": "favorite_avoid_defeat",
+      "market_role": "support",
+      "algorithm": "rf",
+      "selection_score": 0.728269,
+      "test_accuracy": 0.7857142857142857,
+      "test_precision": 0.7857142857142857,
+      "test_f1": 0.88,
+      "test_roc_auc": 0.7114936345705576,
+      "test_brier": 0.15737481685383103,
+      "test_log_loss": 0.47914304434665667,
+      "selected_for_candidates": false,
+      "calibrated": false,
+      "selected_algorithm": "rf",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    },
+    "is_draw": {
+      "target": "is_draw",
+      "market_role": "draw_risk",
+      "algorithm": "rf",
+      "selection_score": 0.355291,
+      "test_accuracy": 0.8681318681318682,
+      "test_precision": 0.0,
+      "test_f1": 0.0,
+      "test_roc_auc": 0.5667194092827005,
+      "test_brier": 0.12561379469429518,
+      "test_log_loss": 0.4221550503945076,
+      "selected_for_candidates": false,
+      "calibrated": false,
+      "selected_algorithm": "rf",
+      "available_algorithms": [
+        "rf",
+        "xgb"
+      ],
+      "selection_policy": "RF champion; XGB challenger must beat RF by CHALLENGER_MIN_IMPROVEMENT"
+    }
+  },
+  "candidate_selection": {
+    "max_one_pick_per_match_per_ticket": true,
+    "heavy_favorite_over15_trap_filter": true,
+    "draw_risk_support_model": true,
+    "btts_floor_gate": true,
+    "over25_under25_risk_gate": true,
+    "leakage_guard": "post-match stats and final result fields removed from features"
+  },
+  "api_payload_fields": [
+    "Date",
+    "season_year",
+    "league_slug",
+    "league_name",
+    "home_team",
+    "away_team",
+    "match",
+    "market",
+    "prediction",
+    "probability",
+    "confidence_score",
+    "risk_score",
+    "draw_risk_score",
+    "draw_model_prob",
+    "agreement_score",
+    "favorite_win_prob",
+    "favorite_avoid_prob",
+    "under15_risk_prob",
+    "under25_risk_prob",
+    "btts_floor_score",
+    "btts_fail_risk",
+    "ticket_eligible",
+    "v04_public_eligible",
+    "v04_premium_eligible",
+    "v04_elite_eligible",
+    "engine_note",
+    "v04_rule_note"
+  ]
+}

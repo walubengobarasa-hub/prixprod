@@ -1,0 +1,31 @@
+{
+  "notebook": "PrixPredictor_Worldcup_Model_v0_5_Leakage_Safe_Colab.ipynb",
+  "matches": 384,
+  "tournaments": [
+    2002,
+    2006,
+    2010,
+    2014,
+    2018,
+    2022
+  ],
+  "train_years": [
+    2002,
+    2006,
+    2010,
+    2014
+  ],
+  "val_year": 2018,
+  "test_year": 2022,
+  "football_only_feature_count": 410,
+  "odds_aware_feature_count": 434,
+  "stage_counts": {
+    "group": 288,
+    "round_of_16": 48,
+    "quarter_final": 24,
+    "semi_final": 12,
+    "third_place": 6,
+    "final": 6
+  },
+  "metrics_file": "world_cup_v05_metrics.csv"
+}

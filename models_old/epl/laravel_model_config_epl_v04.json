@@ -1,0 +1,155 @@
+{
+  "model_version": "epl-v0.4-quality-gated-market-engines",
+  "league_code": "EPL",
+  "league_name": "English Premier League",
+  "market_rules": {
+    "double_chance": {
+      "public_threshold": 82,
+      "premium_threshold": 84,
+      "elite_threshold": 85,
+      "public_max_risk": 18.5,
+      "premium_max_risk": 14.5,
+      "elite_max_risk": 13.0,
+      "status": "active"
+    },
+    "over_1_5": {
+      "public_threshold": 80,
+      "premium_threshold": 82,
+      "elite_threshold": 85,
+      "max_under15_risk_prob": 0.18,
+      "public_max_risk": 18.0,
+      "premium_max_risk": 15.5,
+      "elite_max_risk": 13.0,
+      "min_goal_floor_score": 76,
+      "heavy_favorite_trap_penalty": 8.0,
+      "status": "active_supporting"
+    },
+    "match_outcome": {
+      "public_threshold": 80,
+      "premium_threshold": 82,
+      "elite_threshold": 85,
+      "public_max_draw_risk": 20.0,
+      "premium_max_draw_risk": 18.0,
+      "elite_max_draw_risk": 15.0,
+      "min_agreement": 90,
+      "min_favorite_win_prob": 0.7,
+      "min_favorite_avoid_prob": 0.84,
+      "allow_draw": false,
+      "status": "selective"
+    },
+    "btts": {
+      "review_threshold": 75,
+      "status": "review_only"
+    }
+  },
+  "ticket_quality_rules": {
+    "free_safe_ticket": {
+      "eligible_col": "v04_public_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "match_outcome": 0
+      },
+      "min_items": 3,
+      "max_items": 5,
+      "min_avg_confidence": 83.0,
+      "max_avg_risk": 16.0,
+      "max_low_confidence_items": 1,
+      "low_confidence_cutoff": 83.0
+    },
+    "premium_mixed_ticket": {
+      "eligible_col": "v04_premium_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5",
+        "match_outcome"
+      ],
+      "market_caps": {
+        "double_chance": 3,
+        "over_1_5": 2,
+        "match_outcome": 1
+      },
+      "min_items": 3,
+      "max_items": 5,
+      "min_avg_confidence": 84.5,
+      "max_avg_risk": 14.5,
+      "max_low_confidence_items": 1,
+      "low_confidence_cutoff": 84.0
+    },
+    "elite_ticket": {
+      "eligible_col": "v04_elite_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5",
+        "match_outcome"
+      ],
+      "market_caps": {
+        "double_chance": 2,
+        "over_1_5": 1,
+        "match_outcome": 1
+      },
+      "min_items": 2,
+      "max_items": 3,
+      "min_avg_confidence": 85.0,
+      "max_avg_risk": 13.0,
+      "max_low_confidence_items": 0,
+      "low_confidence_cutoff": 85.0
+    },
+    "single_match_insight": {
+      "eligible_col": "v04_elite_eligible",
+      "allowed_markets": [
+        "double_chance",
+        "over_1_5",
+        "match_outcome"
+      ],
+      "market_caps": {
+        "double_chance": 1,
+        "over_1_5": 1,
+        "match_outcome": 1
+      },
+      "min_items": 1,
+      "max_items": 1,
+      "min_avg_confidence": 85.0,
+      "max_avg_risk": 13.0,
+      "max_low_confidence_items": 0,
+      "low_confidence_cutoff": 85.0
+    }
+  },
+  "market_status": {
+    "double_chance": "active",
+    "over_1_5": "active_supporting",
+    "match_outcome": "selective",
+    "btts": "review_only",
+    "over_2_5": "paused"
+  },
+  "candidate_selection": {
+    "max_one_pick_per_match_per_ticket": true,
+    "heavy_favorite_over15_trap_filter": true,
+    "draw_picks_public": false,
+    "btts_public": false
+  },
+  "api_payload_fields": [
+    "Date",
+    "match",
+    "market",
+    "prediction",
+    "probability",
+    "confidence_score",
+    "risk_score",
+    "draw_risk_score",
+    "agreement_score",
+    "favorite_win_prob",
+    "favorite_avoid_prob",
+    "under15_risk_prob",
+    "ticket_eligible",
+    "v04_public_eligible",
+    "v04_premium_eligible",
+    "v04_elite_eligible",
+    "engine_note",
+    "v04_rule_note"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "league_slug": "uruguay",
+  "league_name": "Uruguay Primera Division",
+  "model_version": "uruguay-v0.6.4-explainable",
+  "rows_total": 2742,
+  "train_rows": 2294,
+  "validation_rows": 300,
+  "test_rows": 148,
+  "seasons": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "odds_available_rate": 0.8694383661560905,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  }
+}

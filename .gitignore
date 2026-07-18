@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+ENV/
+pip-wheel-metadata/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# IDE / editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+gunicorn.log
+uvicorn.log
+
+# Cache / runtime data
+.cache/
+data/cache/
+data/tmp/
+tmp/
+temp/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Local test outputs
+outputs/
+reports/
+exports/
+*.sqlite
+*.db
+
+# Large raw datasets
+dataset/
+datasets/
+raw_data/
+training_data/
+Model Data/
+*.csv
+
+# Training notebooks
+*.ipynb
+
+# Model training artifacts not needed in source control
+# Keep production models only if you intentionally deploy them from Git.
+# Otherwise upload models separately or use release storage.
+*_training_*.pkl
+*_debug_*.pkl
+*_experiment_*.pkl
+*_review_*.pkl
+
+# OS / archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar

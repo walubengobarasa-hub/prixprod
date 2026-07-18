@@ -1,0 +1,31 @@
+{
+  "league_slug": "finland",
+  "league_name": "Finland Veikkausliiga",
+  "model_version": "finland-v0.6.4-explainable",
+  "rows_total": 1593,
+  "train_rows": 1358,
+  "validation_rows": 177,
+  "test_rows": 58,
+  "seasons": [
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "odds_available_rate": 0.9861895794099184,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  }
+}

@@ -1,0 +1,237 @@
+{
+  "league": "World Cup",
+  "slug": "world-cup",
+  "model_version": "wc_v0.5",
+  "class_mapping": {
+    "0": "AWAY_WIN",
+    "1": "DRAW",
+    "2": "HOME_WIN"
+  },
+  "modes": {
+    "football_only": {
+      "feature_columns_file": "feature_columns_football_only.json",
+      "models": {
+        "over15_base": "wc_fo_over15_base.pkl",
+        "under15_risk": "wc_fo_under15_risk.pkl",
+        "btts_review": "wc_fo_btts_review.pkl",
+        "outcome_calibrated": "wc_fo_outcome_calibrated.pkl",
+        "favorite_win_support": "wc_fo_favorite_win_support.pkl",
+        "favorite_avoid_defeat_support": "wc_fo_favorite_avoid_defeat_support.pkl",
+        "over15": "wc_fo_over15_base.pkl",
+        "btts": "wc_fo_btts_review.pkl",
+        "outcome": "wc_fo_outcome_calibrated.pkl",
+        "favorite_win": "wc_fo_favorite_win_support.pkl",
+        "favorite_avoid_defeat": "wc_fo_favorite_avoid_defeat_support.pkl"
+      }
+    },
+    "odds_aware": {
+      "feature_columns_file": "feature_columns_odds_aware.json",
+      "models": {
+        "over15_base": "wc_odds_over15_base.pkl",
+        "under15_risk": "wc_odds_under15_risk.pkl",
+        "btts_review": "wc_odds_btts_review.pkl",
+        "outcome_calibrated": "wc_odds_outcome_calibrated.pkl",
+        "favorite_win_support": "wc_odds_favorite_win_support.pkl",
+        "favorite_avoid_defeat_support": "wc_odds_favorite_avoid_defeat_support.pkl",
+        "over15": "wc_odds_over15_base.pkl",
+        "btts": "wc_odds_btts_review.pkl",
+        "outcome": "wc_odds_outcome_calibrated.pkl",
+        "favorite_win": "wc_odds_favorite_win_support.pkl",
+        "favorite_avoid_defeat": "wc_odds_favorite_avoid_defeat_support.pkl"
+      }
+    }
+  },
+  "recommended_initial_policy": {
+    "over_1_5": {
+      "status": "active",
+      "public_threshold": 84,
+      "premium_threshold": 85,
+      "elite_threshold": 86,
+      "max_risk": 12
+    },
+    "double_chance": {
+      "status": "review_only",
+      "public_threshold": 86
+    },
+    "match_outcome": {
+      "status": "review_only",
+      "public_threshold": 86
+    },
+    "btts": {
+      "status": "review_only"
+    },
+    "ticket_rules": {
+      "single_match_insight": {
+        "enabled": true,
+        "min_confidence": 85,
+        "max_risk": 12
+      },
+      "free_safe_ticket": {
+        "enabled": false
+      },
+      "premium_mixed_ticket": {
+        "enabled": false
+      },
+      "elite_ticket": {
+        "enabled": false
+      }
+    }
+  },
+  "leakage_policy": {
+    "removed_current_match_columns": [
+      "attendance",
+      "away_goals",
+      "away_team_corner_count",
+      "away_team_first_half_cards",
+      "away_team_fouls",
+      "away_team_goal_count",
+      "away_team_goal_count_half_time",
+      "away_team_goal_timings",
+      "away_team_possession",
+      "away_team_red_cards",
+      "away_team_second_half_cards",
+      "away_team_shots",
+      "away_team_shots_off_target",
+      "away_team_shots_on_target",
+      "away_team_yellow_cards",
+      "btts",
+      "home_goals",
+      "home_team_corner_count",
+      "home_team_first_half_cards",
+      "home_team_fouls",
+      "home_team_goal_count",
+      "home_team_goal_count_half_time",
+      "home_team_goal_timings",
+      "home_team_possession",
+      "home_team_red_cards",
+      "home_team_second_half_cards",
+      "home_team_shots",
+      "home_team_shots_off_target",
+      "home_team_shots_on_target",
+      "home_team_yellow_cards",
+      "outcome_class",
+      "outcome_label",
+      "over_1_5",
+      "referee",
+      "team_a_xg",
+      "team_b_xg",
+      "total_goal_count",
+      "total_goals_at_half_time",
+      "total_goals_target",
+      "under_1_5"
+    ],
+    "note": "Only pre-match raw columns and lagged historical rolling features are used."
+  },
+  "league_slug": "world-cup",
+  "league_name": "World Cup",
+  "competition_type": "cup",
+  "model_family": "cup_competition",
+  "ticket_mode": "multi_league_selective",
+  "disable_markets": [
+    "favorite_win",
+    "favorite_avoid_defeat"
+  ],
+  "review_only_markets": [
+    "btts",
+    "match_outcome",
+    "favorite_win",
+    "favorite_avoid_defeat"
+  ],
+  "allowed_public_markets": [
+    "over_1_5",
+    "double_chance"
+  ],
+  "market_rules": {
+    "over_1_5": {
+      "status": "active",
+      "review_threshold": 80,
+      "public_threshold": 88,
+      "premium_threshold": 90,
+      "elite_threshold": 90,
+      "max_under15_risk_public": 0.18
+    },
+    "double_chance": {
+      "status": "active",
+      "review_threshold": 86,
+      "public_threshold": 88,
+      "premium_threshold": 90,
+      "elite_threshold": 90
+    },
+    "match_outcome": {
+      "status": "review_only",
+      "review_threshold": 86,
+      "allow_draw": false
+    },
+    "btts": {
+      "status": "review_only",
+      "review_threshold": 75
+    },
+    "favorite_win": {
+      "status": "disabled"
+    },
+    "favorite_avoid_defeat": {
+      "status": "disabled"
+    }
+  },
+  "ticket_rules": {
+    "league_specific_ticket": {
+      "enabled": true,
+      "tier": "premium",
+      "markets": [
+        "over_1_5",
+        "double_chance"
+      ],
+      "min_items": 4,
+      "max_items": 6,
+      "min_avg_confidence": 88,
+      "max_avg_risk": 14,
+      "market_caps": {
+        "over_1_5": 4,
+        "double_chance": 4
+      },
+      "max_window_days": 3
+    },
+    "cross_league_ticket": {
+      "enabled": true,
+      "tier": "premium",
+      "markets": [
+        "over_1_5",
+        "double_chance"
+      ],
+      "min_items": 4,
+      "max_items": 6,
+      "min_avg_confidence": 88,
+      "max_avg_risk": 14,
+      "market_caps": {
+        "over_1_5": 4,
+        "double_chance": 4
+      },
+      "max_window_days": 3
+    },
+    "elite_ticket": {
+      "enabled": true,
+      "tier": "elite",
+      "markets": [
+        "over_1_5",
+        "double_chance"
+      ],
+      "min_items": 4,
+      "max_items": 6,
+      "min_avg_confidence": 90,
+      "max_avg_risk": 12,
+      "market_caps": {
+        "over_1_5": 4,
+        "double_chance": 4
+      },
+      "max_window_days": 3
+    },
+    "single_match_insight": {
+      "enabled": true,
+      "min_confidence": 88,
+      "max_risk": 14
+    },
+    "allow_cross_league_packaging": true,
+    "fallback_to_single_match_insight": true,
+    "do_not_force_ticket": true
+  }
+}
