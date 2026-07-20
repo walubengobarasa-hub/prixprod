@@ -55,6 +55,44 @@ class EligiblePredictionRequest(BaseModel):
     include_ineligible: bool = False
 
 
+class FixtureResultReference(BaseModel):
+    match_external_id: str
+    league_slug: str
+
+
+class FixtureResultsRequest(BaseModel):
+    fixtures: list[FixtureResultReference] = Field(default_factory=list, max_length=500)
+    force_refresh: bool = False
+
+
+class FixtureResult(BaseModel):
+    match_external_id: str
+    league_slug: str
+    league_name: str | None = None
+    match_date: str | None = None
+    kickoff_time: str | None = None
+    home_team: str | None = None
+    away_team: str | None = None
+    status: str
+    home_score: int | None = None
+    away_score: int | None = None
+    total_goals: int | None = None
+    outcome: Literal["HOME", "DRAW", "AWAY"] | None = None
+    result_text: str | None = None
+
+
+class FixtureResultsResponse(BaseModel):
+    api_version: str = "v1"
+    generated_at: str
+    requested: int
+    completed: int
+    pending: int
+    cancelled: int
+    not_found: int
+    results: list[FixtureResult] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
 class MockFixturePredictionRequest(BaseModel):
     match_external_id: str | None = None
     match_date: str

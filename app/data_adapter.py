@@ -107,3 +107,55 @@ def split_completed_and_fixtures(matches: list[dict[str, Any]], target_date: str
         elif target_date is None or normalized.get("match_date") == target_date:
             fixtures.append(match)
     return completed, fixtures
+
+
+def _score_value(match: dict[str, Any], keys: list[str]) -> int | None:
+    value = first(match, keys, None)
+    if value is None:
+        return None
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return None
+
+
+def normalize_fixture_result(match: dict[str, Any]) -> dict[str, Any]:
+    normalized = normalize_footystats_match(match)
+    raw_status = first(match, ["status", "match_status"], normalized.get("status", "scheduled"))
+    status_text = normalize_match_status(raw_status)
+    home_score = _score_value(match, [
+        "homeGoalCount", "home_goal_count", "home_goals", "home_score",
+        "homeTeamScore", "team_a_score", "goals_home", "score_home",
+    ])
+    away_score = _score_value(match, [
+        "awayGoalCount", "away_goal_count", "away_goals", "away_score",
+        "awayTeamScore", "team_b_score", "goals_away", "score_away",
+    ])
+
+    if is_cancelled_status(status_text):
+        result_status = "cancelled"
+    elif is_completed_status(status_text) and home_score is not None and away_score is not None:
+        result_status = "completed"
+    elif is_completed_status(status_text):
+        result_status = "unavailable"
+    else:
+        result_status = "pending"
+
+    outcome = None
+    total_goals = None
+    result_text = None
+    if home_score is not None and away_score is not None:
+        total_goals = home_score + away_score
+        outcome = "HOME" if home_score > away_score else ("AWAY" if away_score > home_score else "DRAW")
+        result_text = f"{home_score}-{away_score}"
+
+    return {
+        **normalized,
+        "status": result_status,
+        "source_status": status_text,
+        "home_score": home_score,
+        "away_score": away_score,
+        "total_goals": total_goals,
+        "outcome": outcome,
+        "result_text": result_text,
+    }

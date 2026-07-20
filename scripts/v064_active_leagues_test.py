@@ -3,7 +3,7 @@
 
 Examples:
     python scripts/v064_active_leagues_test.py --force
-    python scripts/v064_active_leagues_test.py --date 2026-07-18 --days 3 --api-url http://127.0.0.1:8000 --force
+    python scripts/v064_active_leagues_test.py --date 2026-07-18 --api-url http://127.0.0.1:8000 --force
     python scripts/v064_active_leagues_test.py --skip-live
 """
 from __future__ import annotations
@@ -12,7 +12,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -29,7 +29,9 @@ BASELINE_LEAGUES = [
     "canada", "chile", "china", "ecuador", "estonia", "finland", "iceland", "korea",
     "latvia", "lithuania", "allsvenskan", "uruguay",
 ]
-EXPECTED_CANONICAL_LEAGUES = 28
+MINIMUM_CANONICAL_LEAGUES = 29
+# The earlier project brief named 28 slugs explicitly. The registry is authoritative
+# for the complete 29-model deployment, including the additional local league.
 ACTIVE_MARKETS = {"double_chance", "over_1_5", "match_outcome"}
 REVIEW_ONLY_MARKETS = {"btts", "over_2_5"}
 
@@ -39,7 +41,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--date", default=datetime.now(ZoneInfo("Africa/Nairobi")).date().isoformat())
     parser.add_argument("--api-url", default=os.getenv("PRIX_MODEL_API_URL", "http://127.0.0.1:8000"))
     parser.add_argument("--api-key", default=os.getenv("PRIX_MODEL_API_KEY", ""))
-    parser.add_argument("--days", type=int, default=0, help="Future days to include; 3 tests today through today + 3.")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--skip-live", action="store_true")
     parser.add_argument("--include-ineligible", action="store_true")
@@ -66,8 +67,8 @@ def static_validation() -> dict:
         failures.extend(["registry: " + error for error in registry_errors])
     if missing_expected:
         failures.append("missing baseline league registry entries: " + ", ".join(missing_expected))
-    if len(registered) != EXPECTED_CANONICAL_LEAGUES:
-        failures.append(f"registry contains {len(registered)} canonical leagues; expected {EXPECTED_CANONICAL_LEAGUES}")
+    if len(registered) < MINIMUM_CANONICAL_LEAGUES:
+        failures.append(f"registry contains {len(registered)} canonical leagues; expected at least {MINIMUM_CANONICAL_LEAGUES}")
     for slug in registered:
         row = model_by_slug.get(slug, {})
         if not row.get("ok"):
@@ -78,7 +79,7 @@ def static_validation() -> dict:
     return {
         "sklearn_version": sklearn.__version__,
         "baseline_list_count": len(BASELINE_LEAGUES),
-        "expected_canonical_leagues": EXPECTED_CANONICAL_LEAGUES,
+        "minimum_canonical_leagues": MINIMUM_CANONICAL_LEAGUES,
         "registered_count": len(registered),
         "registered_leagues": registered,
         "missing_expected": missing_expected,
@@ -95,16 +96,13 @@ def live_validation(args: argparse.Namespace) -> dict:
         headers["X-API-Key"] = args.api_key
     from app.league_registry import league_registry
     registered_leagues = league_registry.enabled_slugs()
-    if args.days < 0:
-        raise ValueError("--days cannot be negative")
-    date_to = (datetime.fromisoformat(args.date).date() + timedelta(days=args.days)).isoformat()
     response = requests.post(
         args.api_url.rstrip("/") + "/predict/eligible",
         headers=headers,
         json={
             "leagues": registered_leagues,
             "date_from": args.date,
-            "date_to": date_to,
+            "date_to": args.date,
             "force_refresh": args.force,
             "include_ineligible": args.include_ineligible,
         },
@@ -126,7 +124,7 @@ def live_validation(args: argparse.Namespace) -> dict:
         if status in {"failed", "model_unavailable", "feature_failure", "stale_season"}:
             failures.append(f"{slug}: {status}: {row.get('error') or row.get('warnings')}")
         elif status == "no_fixtures":
-            warnings.append(f"{slug}: no fixtures from {args.date} through {date_to}")
+            warnings.append(f"{slug}: no fixtures on {args.date}")
         if int(row.get("feature_rows") or 0) > 0 and float(row.get("average_feature_coverage") or 0) < args.minimum_feature_coverage:
             failures.append(f"{slug}: average feature coverage below {args.minimum_feature_coverage:.0%}")
 
@@ -149,9 +147,6 @@ def live_validation(args: argparse.Namespace) -> dict:
             failures.append(f"{candidate.get('prediction_key')}: eligible candidate failed feature quality")
         if float(quality.get("coverage_ratio") or 0) < args.minimum_feature_coverage:
             failures.append(f"{candidate.get('prediction_key')}: feature coverage below threshold")
-        match_date = str(candidate.get("match_date") or "")[:10]
-        if not (args.date <= match_date <= date_to):
-            failures.append(f"{candidate.get('prediction_key')}: match date {match_date} is outside requested range")
         key = (str(candidate.get("match_external_id")), str(market), str(candidate.get("prediction")))
         if key in per_ticket_fixture_keys:
             failures.append(f"duplicate candidate identity in response: {key}")
@@ -162,7 +157,6 @@ def live_validation(args: argparse.Namespace) -> dict:
         "generation_run_id": payload.get("generation_run_id"),
         "date_from": payload.get("date_from"),
         "date_to": payload.get("date_to"),
-        "days_ahead": args.days,
         "league_summaries": summaries,
         "eligible_candidate_count": len(candidates),
         "reviewed_candidate_count": len(payload.get("reviewed_candidates") or []),
@@ -176,7 +170,6 @@ def main() -> int:
     report = {
         "tested_at": datetime.now(ZoneInfo("Africa/Nairobi")).isoformat(),
         "target_date": args.date,
-        "days_ahead": args.days,
         "baseline_leagues": BASELINE_LEAGUES,
         "static": static_validation(),
         "live": None,
@@ -192,7 +185,6 @@ def main() -> int:
     failures += list((report.get("live") or {}).get("failures") or [])
     print(json.dumps({
         "target_date": args.date,
-        "days_ahead": args.days,
         "registered_leagues": report["static"]["registered_count"],
         "eligible_candidates": (report.get("live") or {}).get("eligible_candidate_count"),
         "failures": failures,

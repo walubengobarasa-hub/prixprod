@@ -9,7 +9,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
-from app.data_adapter import is_cancelled_status, is_completed_status, normalize_footystats_match
+from app.data_adapter import is_cancelled_status, is_completed_status, normalize_fixture_result, normalize_footystats_match
 from app.feature_builder import build_live_feature_rows_from_footystats
 from app.footystats_client import footystats_client
 from app.league_registry import league_registry
@@ -19,6 +19,8 @@ from app.schemas import (
     EligiblePredictionRequest,
     EligiblePredictionResponse,
     FeaturePredictionRequest,
+    FixtureResultsRequest,
+    FixtureResultsResponse,
     FeatureRow,
     LeagueDatePredictionRequest,
     LeaguePredictionSummary,
@@ -267,6 +269,21 @@ def _mock_fixture_to_footystats_raw(payload: MockFixturePredictionRequest) -> di
     return raw
 
 
+@app.get("/", include_in_schema=False)
+def root() -> dict[str, Any]:
+    return {
+        **health(),
+        "health_url": "/health",
+        "models_url": "/models",
+        "model_validation_url": "/models/validate",
+        "eligible_predictions_url": "/predict/eligible",
+        "fixture_results_url": "/results/fixtures",
+        "docs_enabled": not IS_PRODUCTION,
+    }
+
+
+
+
 @app.get("/health")
 def health() -> dict[str, Any]:
     return {
@@ -280,7 +297,7 @@ def health() -> dict[str, Any]:
     }
 
 
-@app.get("/models", dependencies=[Depends(require_api_key)])
+@app.get("/models")
 def models() -> dict[str, Any]:
     leagues: list[dict[str, Any]] = []
     for slug, original_meta in league_registry.list_leagues().items():
@@ -416,6 +433,74 @@ def build_features(league_slug: str, payload: LeagueDatePredictionRequest | None
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
+@app.post("/results/fixtures", response_model=FixtureResultsResponse, dependencies=[Depends(require_api_key)])
+def fixture_results(payload: FixtureResultsRequest) -> FixtureResultsResponse:
+    requested = list(payload.fixtures or [])
+    if not requested:
+        return FixtureResultsResponse(
+            generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            requested=0,
+            completed=0,
+            pending=0,
+            cancelled=0,
+            not_found=0,
+            results=[],
+        )
+
+    grouped: dict[str, list[Any]] = {}
+    warnings: list[str] = []
+    for reference in requested:
+        grouped.setdefault(reference.league_slug, []).append(reference)
+
+    results: list[dict[str, Any]] = []
+    for requested_slug, references in grouped.items():
+        try:
+            original_meta = league_registry.get(requested_slug)
+            canonical_slug = str(original_meta.get("alias_for") or requested_slug)
+            meta, identifier = _registry_identifier(requested_slug)
+            raw_matches = footystats_client.league_matches(identifier, force_refresh=payload.force_refresh)
+            by_id = {
+                str((row or {}).get("id") or (row or {}).get("match_id") or (row or {}).get("fixture_id") or ""): row
+                for row in raw_matches if isinstance(row, dict)
+            }
+            for reference in references:
+                raw = by_id.get(str(reference.match_external_id))
+                if raw is None:
+                    results.append({
+                        "match_external_id": str(reference.match_external_id),
+                        "league_slug": canonical_slug,
+                        "league_name": meta.get("display_name") or meta.get("name") or canonical_slug,
+                        "status": "not_found",
+                    })
+                    continue
+                normalized = normalize_fixture_result(raw)
+                normalized.update({
+                    "match_external_id": str(reference.match_external_id),
+                    "league_slug": canonical_slug,
+                    "league_name": meta.get("display_name") or meta.get("name") or canonical_slug,
+                })
+                results.append(normalized)
+        except Exception as exc:
+            warnings.append(f"{requested_slug}: {exc}")
+            for reference in references:
+                results.append({
+                    "match_external_id": str(reference.match_external_id),
+                    "league_slug": requested_slug,
+                    "status": "not_found",
+                })
+
+    return FixtureResultsResponse(
+        generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        requested=len(requested),
+        completed=sum(1 for row in results if row.get("status") == "completed"),
+        pending=sum(1 for row in results if row.get("status") in {"pending", "unavailable"}),
+        cancelled=sum(1 for row in results if row.get("status") == "cancelled"),
+        not_found=sum(1 for row in results if row.get("status") == "not_found"),
+        results=results,
+        warnings=warnings,
+    )
+
+
 @app.post("/predict/features", response_model=PredictionResponse, dependencies=[Depends(require_api_key)])
 def predict_features(payload: FeaturePredictionRequest) -> PredictionResponse:
     try:
@@ -461,12 +546,6 @@ def predict_eligible(payload: EligiblePredictionRequest) -> EligiblePredictionRe
     date_to = _parse_date(payload.date_to, date_from)
     if date_to < date_from:
         raise HTTPException(status_code=422, detail="date_to must be on or after date_from.")
-    window_days = (date_type.fromisoformat(date_to) - date_type.fromisoformat(date_from)).days
-    if window_days > int(settings.max_prediction_window_days):
-        raise HTTPException(
-            status_code=422,
-            detail=f"Prediction windows may span at most {settings.max_prediction_window_days} days after date_from.",
-        )
 
     requested = payload.leagues or league_registry.enabled_slugs()
     # Resolve aliases while preserving deterministic order and preventing duplicate model runs.

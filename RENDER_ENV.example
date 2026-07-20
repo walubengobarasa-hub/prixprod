@@ -1,5 +1,5 @@
-APP_ENV=local
-APP_DEBUG=true
+APP_ENV=production
+APP_DEBUG=false
 PRIX_MODEL_API_KEY=replace-with-a-long-random-internal-key
 FOOTYSTATS_API_KEY=replace-with-footystats-key
 FOOTYSTATS_BASE_URL=https://api.football-data-api.com
@@ -11,6 +11,5 @@ MINIMUM_FEATURE_COVERAGE=0.15
 MINIMUM_TEAM_HISTORY=3
 MAXIMUM_SEASON_STALENESS_DAYS=370
 PLATFORM_TIMEZONE=Africa/Nairobi
-
-# Limit in-memory league model bundles during 29-league batch runs.
 PRIX_MAX_CACHED_LEAGUE_MODELS=3
+PRIX_MAX_PREDICTION_WINDOW_DAYS=7

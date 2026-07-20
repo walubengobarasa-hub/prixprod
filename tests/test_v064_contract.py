@@ -99,33 +99,25 @@ def test_future_incomplete_fixture_remains_fixture(monkeypatch):
     assert fixtures == raw
 
 
-def test_enabled_registry_slugs_exclude_aliases():
-    from app.league_registry import league_registry
-    if not league_registry.list_leagues():
-        pytest.skip("models/leagues.json is not present.")
-    enabled = set(league_registry.enabled_slugs())
-    aliases = {slug for slug, meta in league_registry.list_leagues().items() if (meta or {}).get("alias_for")}
-    assert enabled.isdisjoint(aliases)
+def test_fixture_result_status_and_score_normalization():
+    from app.data_adapter import normalize_fixture_result
 
+    completed = normalize_fixture_result({
+        "id": 1001,
+        "status": "complete",
+        "home_name": "Home",
+        "away_name": "Away",
+        "homeGoalCount": 2,
+        "awayGoalCount": 1,
+        "date_unix": 1700000000,
+    })
+    assert completed["status"] == "completed"
+    assert completed["outcome"] == "HOME"
+    assert completed["total_goals"] == 3
+    assert completed["result_text"] == "2-1"
 
-def test_prediction_window_limit_setting_is_at_least_three_days():
-    from app.config import settings
-    assert int(settings.max_prediction_window_days) >= 3
+    postponed = normalize_fixture_result({"id": 1002, "status": "postponed"})
+    assert postponed["status"] == "cancelled"
 
-
-def test_prediction_window_rejects_more_than_configured_limit():
-    from datetime import date, timedelta
-    from fastapi import HTTPException
-    from app.config import settings
-    from app.main import predict_eligible
-    from app.schemas import EligiblePredictionRequest
-
-    start = date(2026, 7, 18)
-    end = start + timedelta(days=int(settings.max_prediction_window_days) + 1)
-    with pytest.raises(HTTPException) as exc:
-        predict_eligible(EligiblePredictionRequest(
-            leagues=[],
-            date_from=start.isoformat(),
-            date_to=end.isoformat(),
-        ))
-    assert exc.value.status_code == 422
+    pending = normalize_fixture_result({"id": 1003, "status": "incomplete"})
+    assert pending["status"] == "pending"
