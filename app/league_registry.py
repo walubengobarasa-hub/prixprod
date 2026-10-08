@@ -50,6 +50,11 @@ class LeagueRegistry:
         seen_seasons: dict[str, str] = {}
         for slug, meta in self.list_leagues().items():
             meta = meta or {}
+            # Disabled competitions may be configured ahead of model training. They
+            # must not block registry application/deployment simply because their
+            # model folder or current provider ID is not available yet.
+            if not bool(meta.get("enabled", True)):
+                continue
             if meta.get("alias_for"):
                 if meta["alias_for"] not in self.list_leagues():
                     errors.append(f"{slug}: alias_for points to missing league {meta['alias_for']}")

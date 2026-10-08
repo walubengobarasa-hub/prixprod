@@ -2,12 +2,11 @@ from __future__ import annotations
 import base64, json, shutil, tempfile, zipfile
 from pathlib import Path
 from typing import Any
-from app.config import model_root_path, project_root, settings
+from app.config import model_root_path, model_release_root_path
 from app.league_registry import league_registry
 from app.model_registry import model_registry
 
-RELEASE_ROOT = (project_root() / settings.model_release_root).resolve()
-RELEASE_ROOT.mkdir(parents=True, exist_ok=True)
+RELEASE_ROOT = model_release_root_path()
 
 def _safe_extract(zf: zipfile.ZipFile, target: Path) -> None:
     for info in zf.infolist():

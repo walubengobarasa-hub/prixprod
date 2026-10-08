@@ -11,7 +11,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app.config import settings, model_root_path
+from app.config import settings, model_root_path, storage_status
 from app.data_adapter import is_cancelled_status, is_completed_status, normalize_fixture_result, normalize_footystats_match
 from app.feature_builder import build_live_feature_rows_from_footystats
 from app.footystats_client import footystats_client
@@ -349,6 +349,7 @@ def health() -> dict[str, Any]:
         "prediction_contract_version": settings.prediction_contract_version,
         "feature_contract_version": settings.feature_contract_version,
         "registered_leagues": len(league_registry.enabled_slugs()),
+        "storage": storage_status(),
     }
 
 
