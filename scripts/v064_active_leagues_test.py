@@ -28,8 +28,10 @@ BASELINE_LEAGUES = [
     "turkey", "scotland", "switzerland", "poland", "japan", "saudi", "norway", "ireland",
     "canada", "chile", "china", "ecuador", "estonia", "finland", "iceland", "korea",
     "latvia", "lithuania", "allsvenskan", "uruguay",
+    "argentina", "australia", "austria", "bosnia", "bulgaria",
+    "colombia", "croatia", "cyprus", "czech", "denmark",
 ]
-MINIMUM_CANONICAL_LEAGUES = 29
+MINIMUM_CANONICAL_LEAGUES = 38
 # The earlier project brief named 28 slugs explicitly. The registry is authoritative
 # for the complete 29-model deployment, including the additional local league.
 ACTIVE_MARKETS = {"double_chance", "over_1_5", "match_outcome"}

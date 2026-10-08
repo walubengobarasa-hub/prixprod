@@ -143,18 +143,6 @@
       "footystats_league_id": 16576,
       "footystats_season_id": 16576
     },
-    "sweden": {
-      "display_name": "Sweden Allsvenskan",
-      "league_code": "SWE",
-      "model_version": "allsvenskan-v0.6.4-explainable",
-      "enabled": true,
-      "competition_type": "league",
-      "model_family": "main_league",
-      "model_folder": "allsvenskan",
-      "alias_for": "allsvenskan",
-      "footystats_league_id": 16576,
-      "footystats_season_id": 16576
-    },
     "spain": {
       "display_name": "Spain La Liga",
       "league_code": "spain",
@@ -295,8 +283,8 @@
       "competition_type": "league",
       "model_family": "main_league",
       "model_folder": "saudi",
-      "footystats_league_id": 15741,
-      "footystats_season_id": 15741
+      "footystats_league_id": 17426,
+      "footystats_season_id": 17426
     },
     "norway": {
       "display_name": "Norway Eliteserien",
@@ -319,6 +307,128 @@
       "model_folder": "ireland",
       "footystats_league_id": 16537,
       "footystats_season_id": 16537
+    },
+    "argentina": {
+      "display_name": "Argentina Primera Division",
+      "league_code": "argentina",
+      "model_version": "argentina-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "argentina",
+      "footystats_league_id": 16571,
+      "footystats_season_id": 16571
+    },
+    "australia": {
+      "display_name": "Australia A-League",
+      "league_code": "australia",
+      "model_version": "australia-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "australia",
+      "footystats_league_id": 17326,
+      "footystats_season_id": 17326
+    },
+    "austria": {
+      "display_name": "Austria Bundesliga",
+      "league_code": "austria",
+      "model_version": "austria-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "austria",
+      "footystats_league_id": 17181,
+      "footystats_season_id": 17181
+    },
+    "bosnia": {
+      "display_name": "Bosnia Premier League",
+      "league_code": "bosnia",
+      "model_version": "bosnia-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "bosnia",
+      "footystats_league_id": 17246,
+      "footystats_season_id": 17246
+    },
+    "bulgaria": {
+      "display_name": "Bulgaria First League",
+      "league_code": "bulgaria",
+      "model_version": "bulgaria-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "bulgaria",
+      "footystats_league_id": 17088,
+      "footystats_season_id": 17088
+    },
+    "colombia": {
+      "display_name": "Colombia Primera A",
+      "league_code": "colombia",
+      "model_version": "colombia-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "colombia",
+      "footystats_league_id": 16614,
+      "footystats_season_id": 16614
+    },
+    "croatia": {
+      "display_name": "Croatia HNL",
+      "league_code": "croatia",
+      "model_version": "croatia-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "croatia",
+      "footystats_league_id": 17087,
+      "footystats_season_id": 17087
+    },
+    "cyprus": {
+      "display_name": "Cyprus First Division",
+      "league_code": "cyprus",
+      "model_version": "cyprus-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "cyprus",
+      "footystats_league_id": 17428,
+      "footystats_season_id": 17428
+    },
+    "czech": {
+      "display_name": "Czech First League",
+      "league_code": "czech",
+      "model_version": "czech-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "czech",
+      "footystats_league_id": 17157,
+      "footystats_season_id": 17157
+    },
+    "denmark": {
+      "display_name": "Denmark Superliga",
+      "league_code": "denmark",
+      "model_version": "denmark-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "denmark",
+      "footystats_league_id": 17091,
+      "footystats_season_id": 17091
+    },
+    "sweden": {
+      "display_name": "Sweden Allsvenskan",
+      "league_code": "SWE",
+      "model_version": "allsvenskan-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "allsvenskan",
+      "alias_for": "allsvenskan",
+      "footystats_league_id": 16576,
+      "footystats_season_id": 16576
     },
     "la-liga": {
       "display_name": "Spain La Liga",

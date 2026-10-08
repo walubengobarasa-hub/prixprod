@@ -1,0 +1,26 @@
+{
+  "league_slug": "norway",
+  "league_name": "Norway Eliteserien",
+  "model_version": "norway-v0.6.4-explainable",
+  "rows_total": 1048,
+  "train_rows": 719,
+  "validation_rows": 240,
+  "test_rows": 89,
+  "seasons": [
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "odds_available_rate": 1.0,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  }
+}
