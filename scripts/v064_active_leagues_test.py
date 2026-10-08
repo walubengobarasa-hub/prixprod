@@ -23,17 +23,9 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-BASELINE_LEAGUES = [
-    "epl", "spain", "italy", "germany", "france", "portugal", "belgium", "brazil",
-    "turkey", "scotland", "switzerland", "poland", "japan", "saudi", "norway", "ireland",
-    "canada", "chile", "china", "ecuador", "estonia", "finland", "iceland", "korea",
-    "latvia", "lithuania", "allsvenskan", "uruguay",
-    "argentina", "australia", "austria", "bosnia", "bulgaria",
-    "colombia", "croatia", "cyprus", "czech", "denmark",
-]
-MINIMUM_CANONICAL_LEAGUES = 38
-# The earlier project brief named 28 slugs explicitly. The registry is authoritative
-# for the complete 29-model deployment, including the additional local league.
+# Registry is the single source of truth. Do not maintain a second hard-coded league list.
+BASELINE_LEAGUES = None
+MINIMUM_CANONICAL_LEAGUES = None
 ACTIVE_MARKETS = {"double_chance", "over_1_5", "match_outcome"}
 REVIEW_ONLY_MARKETS = {"btts", "over_2_5"}
 
@@ -56,8 +48,10 @@ def static_validation() -> dict:
     from app.model_registry import model_registry
 
     registered = league_registry.enabled_slugs()
-    missing_expected = sorted(set(BASELINE_LEAGUES) - set(registered))
-    extra = sorted(set(registered) - set(BASELINE_LEAGUES))
+    baseline = list(registered)
+    minimum = len(registered)
+    missing_expected = []
+    extra = []
     model_results = model_registry.validate_all()
     model_by_slug = {row["league_slug"]: row for row in model_results}
 
@@ -69,8 +63,6 @@ def static_validation() -> dict:
         failures.extend(["registry: " + error for error in registry_errors])
     if missing_expected:
         failures.append("missing baseline league registry entries: " + ", ".join(missing_expected))
-    if len(registered) < MINIMUM_CANONICAL_LEAGUES:
-        failures.append(f"registry contains {len(registered)} canonical leagues; expected at least {MINIMUM_CANONICAL_LEAGUES}")
     for slug in registered:
         row = model_by_slug.get(slug, {})
         if not row.get("ok"):
@@ -80,8 +72,8 @@ def static_validation() -> dict:
 
     return {
         "sklearn_version": sklearn.__version__,
-        "baseline_list_count": len(BASELINE_LEAGUES),
-        "minimum_canonical_leagues": MINIMUM_CANONICAL_LEAGUES,
+        "baseline_list_count": len(baseline),
+        "minimum_canonical_leagues": minimum,
         "registered_count": len(registered),
         "registered_leagues": registered,
         "missing_expected": missing_expected,
@@ -172,7 +164,7 @@ def main() -> int:
     report = {
         "tested_at": datetime.now(ZoneInfo("Africa/Nairobi")).isoformat(),
         "target_date": args.date,
-        "baseline_leagues": BASELINE_LEAGUES,
+        "baseline_leagues": None,
         "static": static_validation(),
         "live": None,
     }

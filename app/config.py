@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     footystats_api_key: str = ""
     footystats_base_url: str = "https://api.football-data-api.com"
     model_root: str = "models"
+    model_release_root: str = "data/model_releases"
     cache_root: str = "data/cache"
     cache_ttl_seconds: int = 3600
     footystats_timeout_seconds: int = 45

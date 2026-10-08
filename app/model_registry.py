@@ -105,6 +105,13 @@ class LoadedLeagueModel:
             raise FileNotFoundError(f"Model folder not found: {self.folder}")
 
         self.config = json.loads((self.folder / "model_config.json").read_text(encoding="utf-8"))
+        expected_family = str(meta.get("model_family") or "")
+        declared_family = str(self.config.get("model_family") or "")
+        if expected_family in {"league_v064", "main_league"}:
+            if declared_family not in {"", "league_v064", "main_league"}:
+                raise ValueError(f"Model family mismatch for {league_slug}: expected league_v064, got {declared_family}")
+        elif expected_family and declared_family != expected_family:
+            raise ValueError(f"Model family mismatch for {league_slug}: expected {expected_family}, got {declared_family or 'missing'}")
         self.model_version = self.config.get("model_version", meta.get("model_version", "unknown"))
         self.explainability_profile = self._load_json_optional("explainability_profile.json")
         self.feature_importances = self._load_feature_importances()

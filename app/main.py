@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from datetime import date as date_type, datetime, timezone
 from typing import Any
 from uuid import uuid4
@@ -7,8 +9,9 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from app.config import settings
+from app.config import settings, model_root_path
 from app.data_adapter import is_cancelled_status, is_completed_status, normalize_fixture_result, normalize_footystats_match
 from app.feature_builder import build_live_feature_rows_from_footystats
 from app.footystats_client import footystats_client
@@ -28,6 +31,7 @@ from app.schemas import (
     PredictionResponse,
 )
 from app.security import require_api_key
+from app.deployment_manager import deploy_release, rollback_release
 from app.storage import cache_path, read_cache, write_cache
 
 IS_PRODUCTION = settings.app_env.lower() in {"production", "prod"}
@@ -269,6 +273,57 @@ def _mock_fixture_to_footystats_raw(payload: MockFixturePredictionRequest) -> di
     return raw
 
 
+
+class AdminRegistryApplyRequest(BaseModel):
+    registry: dict[str, Any]
+
+@app.post("/admin/registry/apply", dependencies=[Depends(require_api_key)])
+def admin_apply_registry(payload: AdminRegistryApplyRequest) -> dict[str, Any]:
+    target = model_root_path()
+    target.mkdir(parents=True, exist_ok=True)
+    if not isinstance(payload.registry.get("leagues"), dict):
+        raise HTTPException(status_code=422, detail="registry.leagues must be an object")
+    registry_path = target / "leagues.json"
+    previous = registry_path.read_bytes() if registry_path.exists() else None
+    tmp = target / "leagues.json.tmp"
+    try:
+        tmp.write_text(json.dumps(payload.registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        tmp.replace(registry_path)
+        league_registry.reload(); model_registry.clear()
+        errors = league_registry.validate()
+        if errors:
+            raise ValueError("Registry validation failed: " + json.dumps(errors))
+        return {"ok": True, "registry_errors": [], "enabled_slugs": league_registry.enabled_slugs()}
+    except Exception as exc:
+        if previous is not None:
+            registry_path.write_bytes(previous)
+        elif registry_path.exists():
+            registry_path.unlink()
+        league_registry.reload(); model_registry.clear()
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+class AdminReleaseDeployRequest(BaseModel):
+    release_key: str
+    archive_base64: str
+    registry: dict[str, Any]
+
+class AdminReleaseRollbackRequest(BaseModel):
+    release_key: str
+
+@app.post("/admin/releases/deploy", dependencies=[Depends(require_api_key)])
+def admin_deploy_release(payload: AdminReleaseDeployRequest) -> dict[str, Any]:
+    try:
+        return deploy_release(payload.release_key, payload.archive_base64, payload.registry)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+@app.post("/admin/releases/rollback", dependencies=[Depends(require_api_key)])
+def admin_rollback_release(payload: AdminReleaseRollbackRequest) -> dict[str, Any]:
+    try:
+        return rollback_release(payload.release_key)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
 @app.get("/", include_in_schema=False)
 def root() -> dict[str, Any]:
     return {
@@ -310,6 +365,11 @@ def models() -> dict[str, Any]:
             "model_folder": meta.get("model_folder") or meta.get("alias_for") or slug,
             "footystats_league_id": meta.get("footystats_league_id"),
             "footystats_season_id": meta.get("footystats_season_id"),
+            "competition_type": meta.get("competition_type", "league"),
+            "competition_format": meta.get("competition_format", "round_robin"),
+            "model_family": meta.get("model_family", "league_v064"),
+            "uses_team_strength": bool(meta.get("uses_team_strength", False)),
+            "uses_league_strength": bool(meta.get("uses_league_strength", False)),
         }
         if not meta.get("alias_for"):
             try:
