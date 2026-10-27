@@ -1,7 +1,7 @@
 {
   "league_slug": "bulgaria",
   "league_name": "Bulgaria First League",
-  "competition_type": "main_league",
+  "competition_type": "league",
   "model_family": "main_league",
   "model_version": "bulgaria-v0.6.4-explainable",
   "model_mode": "odds_aware",
@@ -13,8 +13,6 @@
     "over25": "bulgaria_over25_base_review_model.pkl",
     "under25_risk": "bulgaria_under25_risk_model.pkl",
     "outcome": "bulgaria_outcome_calibrated_model.pkl",
-    "favorite_win": "bulgaria_favorite_win_support_model.pkl",
-    "favorite_avoid_defeat": "bulgaria_favorite_avoid_defeat_support_model.pkl",
     "draw_risk": "bulgaria_draw_risk_support_model.pkl",
     "first_goal_window": "bulgaria_first_goal_window_model.pkl",
     "winner_decision_window": "bulgaria_winner_decision_window_model.pkl"
@@ -109,5 +107,6 @@
     "reason_codes_enabled": true,
     "goal_timing_estimates_enabled": true,
     "winner_decision_estimates_enabled": true
-  }
+  },
+  "prediction_scope": "normal_match_result"
 }

@@ -2,25 +2,17 @@
   "league_slug": "bulgaria",
   "league_name": "Bulgaria First League",
   "model_version": "bulgaria-v0.6.4-explainable",
-  "rows_total": 2751,
-  "train_rows": 2389,
-  "validation_rows": 293,
-  "test_rows": 69,
+  "rows_total": 1100,
+  "train_rows": 515,
+  "validation_rows": 292,
+  "test_rows": 293,
   "seasons": [
-    2015,
-    2016,
-    2017,
-    2018,
-    2019,
-    2020,
-    2021,
     2022,
     2023,
     2024,
-    2025,
-    2026
+    2025
   ],
-  "odds_available_rate": 0.8204289349327517,
+  "odds_available_rate": 1.0,
   "model_mode": "odds_aware",
   "feature_count": 400,
   "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
@@ -29,5 +21,10 @@
     "reason_codes": true,
     "goal_timing_estimates": true,
     "winner_decision_estimates": true
-  }
+  },
+  "competition_type": "league",
+  "prediction_scope": "normal_match_result",
+  "qualification_prediction_supported": false,
+  "source_data_note": "Domestic competition match results",
+  "training_profile": "expansion_resource_limited_70_trees_1800_recent_rows_not_identical_to_spain_reference"
 }

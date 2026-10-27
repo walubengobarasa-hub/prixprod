@@ -561,6 +561,116 @@
       "footystats_league_id": 16558,
       "footystats_season_id": 16558,
       "alias_for": "norway"
+    },
+    "georgia": {
+      "display_name": "Georgia Erovnuli Liga",
+      "league_code": "georgia",
+      "model_version": "georgia-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "georgia",
+      "footystats_league_id": 16629,
+      "footystats_season_id": 16629
+    },
+    "greece": {
+      "display_name": "Greece Super League",
+      "league_code": "greece",
+      "model_version": "greece-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "greece",
+      "footystats_league_id": 17356,
+      "footystats_season_id": 17356
+    },
+    "hungary": {
+      "display_name": "Hungary NB I",
+      "league_code": "hungary",
+      "model_version": "hungary-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "hungary",
+      "footystats_league_id": 17165,
+      "footystats_season_id": 17165
+    },
+    "mexico": {
+      "display_name": "Mexico Liga MX",
+      "league_code": "mexico",
+      "model_version": "mexico-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "mexico",
+      "footystats_league_id": 17099,
+      "footystats_season_id": 17099
+    },
+    "netherlands": {
+      "display_name": "Netherlands Eredivisie",
+      "league_code": "netherlands",
+      "model_version": "netherlands-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "netherlands",
+      "footystats_league_id": 17097,
+      "footystats_season_id": 17097
+    },
+    "northern-ireland": {
+      "display_name": "Northern Ireland Premiership",
+      "league_code": "northern-ireland",
+      "model_version": "northern-ireland-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "northern-ireland",
+      "footystats_league_id": 17177,
+      "footystats_season_id": 17177
+    },
+    "romania": {
+      "display_name": "Romania Liga I",
+      "league_code": "romania",
+      "model_version": "romania-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "romania",
+      "footystats_league_id": 17247,
+      "footystats_season_id": 17247
+    },
+    "usa-mls": {
+      "display_name": "USA MLS",
+      "league_code": "usa-mls",
+      "model_version": "usa-mls-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "usa-mls",
+      "footystats_league_id": 16504,
+      "footystats_season_id": 16504
+    },
+    "uefa-champions-league": {
+      "display_name": "UEFA Champions League",
+      "league_code": "uefa-champions-league",
+      "model_version": "uefa-champions-league-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "cup",
+      "model_family": "cup",
+      "model_folder": "uefa-champions-league",
+      "footystats_league_id": 17128,
+      "footystats_season_id": 17128
+    },
+    "uefa-conference-league": {
+      "display_name": "UEFA Conference League",
+      "league_code": "uefa-conference-league",
+      "model_version": "uefa-conference-league-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "cup",
+      "model_family": "cup",
+      "model_folder": "uefa-conference-league",
+      "footystats_league_id": 17130,
+      "footystats_season_id": 17130
     }
   }
 }

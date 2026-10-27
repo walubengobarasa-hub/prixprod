@@ -1,0 +1,33 @@
+{
+  "league_slug": "ucl",
+  "league_name": "UEFA Champions League",
+  "model_version": "ucl-v0.6.4-explainable",
+  "rows_total": 1400,
+  "train_rows": 840,
+  "validation_rows": 279,
+  "test_rows": 281,
+  "seasons": [
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "odds_available_rate": 0.9992857142857143,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "cup",
+  "prediction_scope": "regulation_time_90min_only",
+  "qualification_prediction_supported": false,
+  "source_data_note": "Knockout qualification, aggregate scores, extra time and penalties are NOT modeled by this dataset",
+  "training_profile": "expansion_resource_limited_70_trees_1800_recent_rows_not_identical_to_spain_reference"
+}

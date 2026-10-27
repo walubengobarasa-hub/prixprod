@@ -1,0 +1,31 @@
+{
+  "league_slug": "greece",
+  "league_name": "Greece Super League",
+  "model_version": "greece-v0.6.4-explainable",
+  "rows_total": 1100,
+  "train_rows": 628,
+  "validation_rows": 236,
+  "test_rows": 236,
+  "seasons": [
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "odds_available_rate": 1.0,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "league",
+  "prediction_scope": "normal_match_result",
+  "qualification_prediction_supported": false,
+  "source_data_note": "Domestic competition match results",
+  "training_profile": "expansion_resource_limited_70_trees_1800_recent_rows_not_identical_to_spain_reference"
+}
