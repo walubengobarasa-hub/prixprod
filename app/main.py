@@ -398,6 +398,26 @@ def models() -> dict[str, Any]:
     }
 
 
+@app.get("/registry/status", dependencies=[Depends(require_api_key)])
+def registry_status() -> dict[str, Any]:
+    """Cheap registry diagnostics; does not load any sklearn models or call FootyStats."""
+    root = model_root_path()
+    entries = league_registry.list_leagues()
+    canonical = {slug: meta for slug, meta in entries.items()
+                 if not (meta or {}).get("alias_for") and bool((meta or {}).get("enabled", True))}
+    return {
+        "model_root": str(root),
+        "registry_path": str(league_registry.path),
+        "registry_entries": len(entries),
+        "enabled_distinct_leagues": len(canonical),
+        "enabled_aliases": sum(1 for meta in entries.values() if (meta or {}).get("alias_for") and (meta or {}).get("enabled", True)),
+        "missing_model_folders": [slug for slug, meta in canonical.items()
+                                  if not (root / str((meta or {}).get("model_folder") or slug)).is_dir()],
+        "registered_slugs": sorted(canonical),
+        "registry_errors": league_registry.validate(),
+    }
+
+
 @app.post("/registry/reload", dependencies=[Depends(require_api_key)])
 def reload_registry() -> dict[str, Any]:
     league_registry.reload()

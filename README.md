@@ -1,92 +1,22 @@
-# PrixPredictor Model API v0.1
+# Prix Predictor FastAPI registry diagnostics (non-destructive)
 
-FastAPI service for football analytics forecasting and candidate packaging. Laravel remains responsible for users, payments, admin, frontend display, publishing, and access control.
+## Verified from supplied source
+- `/health` registered_leagues is len(league_registry.enabled_slugs()); it does not count model artifacts.
+- Registry is read from model_root_path()/leagues.json on startup and on POST /registry/reload.
+- `/predict/eligible` processes leagues sequentially. HTTP requests to FootyStats may take up to 45 seconds each.
+- Your supplied leagues(2).json has 60 enabled keys, including 12 aliases => 48 distinct leagues.
 
-## First integration path
+## Deploy
+1. Back up app/main.py.
+2. Merge supplied app/main.py into the deployed FastAPI app (same version as supplied FastApi(1).zip).
+3. Restart the FastAPI server to load the route. Keep your real secrets in environment variables.
+4. GET /registry/status with the same API key as other protected API endpoints (header according to app/security.py). DO NOT paste the key into chat.
+5. Compare model_root, registry_path, registered_slugs and missing_model_folders.
+6. Ensure current leagues.json and corresponding model directories exist in the reported model_root. Only then POST /registry/reload and check 48 expected distinct leagues.
 
-Use `/predict/features` first. It expects already-engineered feature rows matching the `feature_columns.json` exported from Colab. This lets us prove model serving and Laravel integration before relying on live feature parity.
-
-## Required EPL artifacts
-
-Drop these in `models/epl/`:
-
-```text
-model_config.json
-feature_columns.json
-epl_over15_base_model.pkl
-epl_under15_risk_model.pkl
-epl_outcome_calibrated_model.pkl
-epl_btts_base_model.pkl
-epl_favorite_win_model.pkl
-epl_favorite_avoid_defeat_model.pkl
-```
-
-If filenames differ, edit `models/epl/model_config.json`.
-
-## Run
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --reload
-```
-
-Docs: `http://127.0.0.1:8000/docs`
-
-## Main endpoints
-
-```text
-GET  /health
-GET  /models
-POST /predict/features
-POST /sync/league/{league_slug}
-POST /predict/league/{league_slug}
-```
-
-Use header `X-API-Key` for protected endpoints once `PREDICTOR_API_KEY` is changed from `change-me`.
-
-
-## v0.6.4 explainable model support
-
-This build supports the new v0.6.4 explainable artifacts exported by the Colab runner.
-
-Active candidate markets are:
-
-- `double_chance`
-- `over_1_5`
-- `match_outcome`
-
-`btts` and `over_2_5` remain review-only unless a league config explicitly opens them. Match Outcome uses stricter candidature gates: confidence, draw-risk, agreement, and favorite-support checks.
-
-Prediction responses now include:
-
-- `explanation`
-- `reason_codes`
-- `top_factors`
-- `goal_timing_estimate`
-- `winner_decision_estimate`
-
-Timing fields are estimates based on historical profiles, not guarantees.
-
-### Install future trained leagues
-
-After running the v0.6.4 Colab runner and downloading/copying output folders, install them into the API with:
-
-```bash
-python scripts/install_v064_artifacts.py /path/to/model_outputs/v064
-```
-
-Then restart FastAPI or call:
-
-```bash
-curl -X POST "$API/models/{league_slug}/reload" -H "X-API-Key: $PRIX_MODEL_API_KEY"
-```
-
-### Local smoke test
-
-```bash
-python scripts/v064_explainability_smoke_test.py allsvenskan
-python scripts/v064_explainability_smoke_test.py finland
-```
+## 502 protection / next backend patch
+- Laravel should batch `/predict/eligible` requests into ~3–5 registered leagues each, and handle each batch's failure separately. This requires the CURRENT app/Services/PrixModelApiService.php to patch safely; not included in the uploaded FastAPI ZIP.
+- For result sync, group requests into similarly bounded league chunks; run in queues or scheduled jobs rather than blocking web page responses.
+- Do not simply increase HTTP timeouts to huge values, or automatically treat unresolved fixture results as losses.
+- Confirm both /predict/eligible and /results/fixtures with a SINGLE league before testing multiple leagues.
+- Cup model config should be checked for model_family agreement: the supplied registry uses `cup` which loader checks strictly against model_config.json.
