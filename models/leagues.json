@@ -624,7 +624,7 @@
       "enabled": true,
       "competition_type": "league",
       "model_family": "main_league",
-      "model_folder": "northern-ireland",
+      "model_folder": "northern_ireland",
       "footystats_league_id": 17177,
       "footystats_season_id": 17177
     },
@@ -646,7 +646,7 @@
       "enabled": true,
       "competition_type": "league",
       "model_family": "main_league",
-      "model_folder": "usa-mls",
+      "model_folder": "usa",
       "footystats_league_id": 16504,
       "footystats_season_id": 16504
     },
@@ -657,7 +657,7 @@
       "enabled": true,
       "competition_type": "cup",
       "model_family": "cup",
-      "model_folder": "uefa-champions-league",
+      "model_folder": "ucl",
       "footystats_league_id": 17128,
       "footystats_season_id": 17128
     },
@@ -668,7 +668,7 @@
       "enabled": true,
       "competition_type": "cup",
       "model_family": "cup",
-      "model_folder": "uefa-conference-league",
+      "model_folder": "uecl",
       "footystats_league_id": 17130,
       "footystats_season_id": 17130
     }
