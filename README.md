@@ -1,22 +1,48 @@
-# Prix Predictor FastAPI registry diagnostics (non-destructive)
+# Prix Model API — low-memory patch (2026-11-01)
 
-## Verified from supplied source
-- `/health` registered_leagues is len(league_registry.enabled_slugs()); it does not count model artifacts.
-- Registry is read from model_root_path()/leagues.json on startup and on POST /registry/reload.
-- `/predict/eligible` processes leagues sequentially. HTTP requests to FootyStats may take up to 45 seconds each.
-- Your supplied leagues(2).json has 60 enabled keys, including 12 aliases => 48 distinct leagues.
+## Scope
+Targeted updates for `appapi.zip`, meant to overlay an EXISTING running FastAPI project, not replace its model or registry directories. No model weights, prediction thresholds, response schemas, fixture IDs, or ticket rules are changed.
 
-## Deploy
-1. Back up app/main.py.
-2. Merge supplied app/main.py into the deployed FastAPI app (same version as supplied FastApi(1).zip).
-3. Restart the FastAPI server to load the route. Keep your real secrets in environment variables.
-4. GET /registry/status with the same API key as other protected API endpoints (header according to app/security.py). DO NOT paste the key into chat.
-5. Compare model_root, registry_path, registered_slugs and missing_model_folders.
-6. Ensure current leagues.json and corresponding model directories exist in the reported model_root. Only then POST /registry/reload and check 48 expected distinct leagues.
+Files to copy into the project root (overwriting only these four paths):
+- `app/config.py`: default cache for **one** league model, bounded heavy-request wait.
+- `app/model_registry.py`: evict previous model **before** deserialising next model, then reclaim references.
+- `app/storage.py`: stream JSON cache writes to unique atomic files; load cached JSON with `json.load`; read-time parsing still needs memory for the full payload.
+- `app/main.py`: only one memory-intensive request at a time, cheap cache metadata inspection, single-pass match normalisation, RSS and request-duration logs.
 
-## 502 protection / next backend patch
-- Laravel should batch `/predict/eligible` requests into ~3–5 registered leagues each, and handle each batch's failure separately. This requires the CURRENT app/Services/PrixModelApiService.php to patch safely; not included in the uploaded FastAPI ZIP.
-- For result sync, group requests into similarly bounded league chunks; run in queues or scheduled jobs rather than blocking web page responses.
-- Do not simply increase HTTP timeouts to huge values, or automatically treat unresolved fixture results as losses.
-- Confirm both /predict/eligible and /results/fixtures with a SINGLE league before testing multiple leagues.
-- Cup model config should be checked for model_family agreement: the supplied registry uses `cup` which loader checks strictly against model_config.json.
+## Render configuration
+Use **one server worker**. For example, if your current launch is Uvicorn, configure:
+
+```
+uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-10000} --workers 1
+```
+
+Modify your existing Start Command only if the above matches your deployment/runtime. `WEB_CONCURRENCY=1` by itself will not override an explicit higher worker count.
+
+Set on Render > Environment:
+
+```
+PRIX_MAX_CACHED_LEAGUE_MODELS=1
+PRIX_HEAVY_REQUEST_WAIT_SECONDS=3
+WEB_CONCURRENCY=1
+OMP_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1
+MKL_NUM_THREADS=1
+NUMEXPR_NUM_THREADS=1
+```
+
+The environment variable `PRIX_MAX_CACHED_LEAGUE_MODELS` overrides the code default: remove any old value of 3 or update it to 1. Configure BLAS/thread variables before importing NumPy / scikit-learn (the environment screen and restart handle this).
+
+## Concurrency and failure handling
+Heavy endpoints (predict, league sync, feature generation, fixture results, `/models`) are serialized **within one process**; requests that cannot acquire the gate within 3 seconds return HTTP 503 with `Retry-After: 5` and `code=MODEL_BUSY`. This protects memory, but is not a work queue. Keep ONE Uvicorn/Gunicorn worker and ONE Laravel ticket generation at a time. Health checks remain immediately available.
+
+The gateway logs `heavy_request_start`, `heavy_request_end` with RSS MB + seconds, and `heavy_request_busy`. Check Render's memory chart because this patch does not guarantee any single league model bundle fits the instance.
+
+## Deployment
+1. Back up deployed source/config. Do not delete `models/`, your configured `leagues.json`, or persistent data/cache.
+2. Copy the four patch files to the same `app/` paths in your FastAPI project.
+3. Set the Render variables and one-worker start command; redeploy.
+4. Check `/health` (must return HTTP 200) and model metadata, then request ONE league / ONE date before full generation.
+5. Monitor RSS at start/end in Render logs and memory chart. If one league alone still exceeds memory, review that model's artifact sizes / replace unusually large models without blind automatic retries.
+
+## Validation
+Python syntax compilation and five smoke tests completed in the patch workspace. End-to-end testing with the deployed model artifacts, real FootyStats traffic and Render's RAM cap remains required.

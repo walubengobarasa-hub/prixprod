@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import gc
 from collections import OrderedDict
 from threading import RLock
 from typing import Any
@@ -287,12 +288,18 @@ class ModelRegistry:
                 self._cache.move_to_end(cache_key)
                 return self._cache[cache_key]
 
-            self._cache[cache_key] = LoadedLeagueModel(cache_key)
-            self._cache.move_to_end(cache_key)
             max_cached = max(1, int(settings.max_cached_league_models or 1))
-            while len(self._cache) > max_cached:
+            # Evict BEFORE loading: loading then evicting briefly holds N+1 model
+            # bundles, which can exceed the RAM of a small Render instance.
+            evicted = False
+            while len(self._cache) >= max_cached:
                 self._cache.popitem(last=False)
-            return self._cache[cache_key]
+                evicted = True
+            if evicted:
+                gc.collect()
+            loaded = LoadedLeagueModel(cache_key)
+            self._cache[cache_key] = loaded
+            return loaded
 
     def reload(self, league_slug: str) -> LoadedLeagueModel:
         with self._lock:

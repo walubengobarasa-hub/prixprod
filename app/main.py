@@ -1,13 +1,20 @@
 from __future__ import annotations
 
 import json
+import asyncio
+import logging
+import os
+import re
+import time
+from pathlib import Path
 
 from datetime import date as date_type, datetime, timezone
 from typing import Any
 from uuid import uuid4
 from zoneinfo import ZoneInfo
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -52,6 +59,51 @@ app.add_middleware(
 )
 
 
+# Sync FastAPI endpoints run in a threadpool. An async request gate serializes
+# memory-heavy calls BEFORE they can start competing for model/match memory.
+_heavy_request_lock = asyncio.Lock()
+_memory_logger = logging.getLogger("uvicorn.error")
+_HEAVY_PATHS = (
+    "/predict/", "/results/fixtures", "/sync/league/", "/features/",
+    "/models",  # /models and /models/validate also load multiple model files
+)
+
+
+def _rss_memory_mb() -> float | None:
+    try:
+        # Linux / Render: current process resident memory, not historical peak.
+        pages = int(Path("/proc/self/statm").read_text().split()[1])
+        return round(pages * os.sysconf("SC_PAGE_SIZE") / 1048576, 2)
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+@app.middleware("http")
+async def bound_memory_heavy_requests(request: Request, call_next):
+    if request.method not in {"GET", "POST"} or not any(
+        request.url.path == part or request.url.path.startswith(part)
+        for part in _HEAVY_PATHS
+    ):
+        return await call_next(request)
+    try:
+        await asyncio.wait_for(_heavy_request_lock.acquire(), timeout=settings.heavy_request_wait_seconds)
+    except asyncio.TimeoutError:
+        _memory_logger.warning("heavy_request_busy path=%s rss_mb=%s", request.url.path, _rss_memory_mb())
+        return JSONResponse(
+            status_code=503, headers={"Retry-After": "5"},
+            content={"detail": "Prediction service is processing another request. Retry shortly.", "code": "MODEL_BUSY"},
+        )
+    started = time.monotonic()
+    try:
+        _memory_logger.info("heavy_request_start path=%s rss_mb=%s cached_models=%s",
+                            request.url.path, _rss_memory_mb(), len(model_registry._cache))
+        return await call_next(request)
+    finally:
+        _memory_logger.info("heavy_request_end path=%s seconds=%.2f rss_mb=%s cached_models=%s",
+                            request.url.path, time.monotonic() - started, _rss_memory_mb(), len(model_registry._cache))
+        _heavy_request_lock.release()
+
+
 def _today() -> str:
     return datetime.now(ZoneInfo(settings.platform_timezone)).date().isoformat()
 
@@ -76,11 +128,11 @@ def _cache_info(name: str) -> dict[str, Any]:
     if not path.exists():
         return {"exists": False, "path": str(path), "cached_at": None}
     try:
-        import json
-
-        wrapper = json.loads(path.read_text(encoding="utf-8"))
-        return {"exists": True, "path": str(path), "cached_at": wrapper.get("cached_at")}
-    except Exception:
+        with path.open("r", encoding="utf-8") as source:
+            prefix = source.read(1024)
+        match = re.search(r'"cached_at"\s*:\s*"([^"\n]+)"', prefix)
+        return {"exists": True, "path": str(path), "cached_at": match.group(1) if match else None}
+    except OSError:
         return {"exists": True, "path": str(path), "cached_at": None}
 
 
@@ -149,15 +201,30 @@ def _sync_league_matches(
 ) -> dict[str, Any]:
     meta, identifier = _registry_identifier(league_slug)
     raw_matches = footystats_client.league_matches(identifier, force_refresh=force_refresh)
-    completed, fixtures = _classify_matches(raw_matches, date_from, date_to)
-
-    normalized = [normalize_footystats_match(row) for row in raw_matches]
-    normalized_completed = [normalize_footystats_match(row) for row in completed]
-    normalized_fixtures = [normalize_footystats_match(row) for row in fixtures]
-    all_dates = sorted(str(row.get("match_date"))[:10] for row in normalized if row.get("match_date"))
-    completed_dates = sorted(str(row.get("match_date"))[:10] for row in normalized_completed if row.get("match_date"))
-    latest_data_match_date = all_dates[-1] if all_dates else None
-    latest_completed_date = completed_dates[-1] if completed_dates else None
+    completed, fixtures = [], []
+    normalized, normalized_completed, normalized_fixtures = [], [], []
+    now_utc = datetime.now(timezone.utc)
+    for raw in raw_matches:
+        row = normalize_footystats_match(raw)
+        normalized.append(row)
+        status = str(row.get("status") or "").lower()
+        kickoff = row.get("kickoff_time")
+        kickoff_dt = None
+        if kickoff:
+            try:
+                kickoff_dt = datetime.fromisoformat(str(kickoff).replace("Z", "+00:00"))
+                if kickoff_dt.tzinfo is None:
+                    kickoff_dt = kickoff_dt.replace(tzinfo=timezone.utc)
+            except (ValueError, TypeError):
+                pass
+        if is_completed_status(status) and (kickoff_dt is None or kickoff_dt <= now_utc):
+            completed.append(raw)
+            normalized_completed.append(row)
+        elif not is_cancelled_status(status) and (kickoff_dt is None or kickoff_dt > now_utc) and _date_in_range(row.get("match_date"), date_from, date_to):
+            fixtures.append(raw)
+            normalized_fixtures.append(row)
+    latest_data_match_date = max((str(row.get("match_date"))[:10] for row in normalized if row.get("match_date")), default=None)
+    latest_completed_date = max((str(row.get("match_date"))[:10] for row in normalized_completed if row.get("match_date")), default=None)
     stale_season = False
     freshness_date = latest_completed_date or latest_data_match_date
     if freshness_date:
@@ -183,6 +250,11 @@ def _sync_league_matches(
     write_cache(names["normalized"], normalized, metadata=metadata)
     write_cache(names["completed"], normalized_completed, metadata=metadata)
     write_cache(names["fixtures"], normalized_fixtures, metadata=metadata)
+    normalized_count = len(normalized)
+    sample_fixture = normalized_fixtures[0] if normalized_fixtures else None
+    sample_completed = normalized_completed[-1] if normalized_completed else None
+    # Don't retain full normalized copies during expensive feature construction.
+    del normalized, normalized_completed, normalized_fixtures
 
     return {
         "league_slug": league_slug,
@@ -197,12 +269,12 @@ def _sync_league_matches(
         "completed_raw": completed,
         "fixtures_raw": fixtures,
         "raw_count": len(raw_matches),
-        "normalized_count": len(normalized),
+        "normalized_count": normalized_count,
         "completed_count": len(completed),
         "fixture_count": len(fixtures),
         "cache": {key: _cache_info(value) for key, value in names.items() if key != "features"},
-        "sample_fixture": normalized_fixtures[0] if normalized_fixtures else None,
-        "sample_completed": normalized_completed[-1] if normalized_completed else None,
+        "sample_fixture": sample_fixture,
+        "sample_completed": sample_completed,
     }
 
 

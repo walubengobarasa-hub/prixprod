@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 from datetime import datetime, timezone
 from typing import Any
 
@@ -17,9 +18,19 @@ def write_cache(name: str, payload: Any, metadata: dict[str, Any] | None = None)
         "metadata": metadata or {},
         "payload": payload,
     }
-    temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
-    temporary.write_text(json.dumps(wrapper, indent=2, default=str), encoding="utf-8")
-    temporary.replace(path)
+    # json.dumps() constructs another full-sized copy in RAM. Stream directly
+    # to a unique temp file and atomically swap it into place on success.
+    temp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                         prefix=f".{path.name}.", suffix=".tmp",
+                                         delete=False) as temporary:
+            temp_path = temporary.name
+            json.dump(wrapper, temporary, separators=(",", ":"), default=str, ensure_ascii=False)
+        os.replace(temp_path, path)
+    finally:
+        if temp_path and os.path.exists(temp_path):
+            os.unlink(temp_path)
     return path
 
 
@@ -28,7 +39,8 @@ def read_cache(name: str, max_age_seconds: int | None = None):
     if not path.exists():
         return None
     try:
-        wrapper = json.loads(path.read_text(encoding="utf-8"))
+        with path.open("r", encoding="utf-8") as source:
+            wrapper = json.load(source)
     except (OSError, json.JSONDecodeError):
         return None
     if max_age_seconds is not None:
@@ -50,6 +62,7 @@ def read_cache_wrapper(name: str) -> dict[str, Any] | None:
     if not path.exists():
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        with path.open("r", encoding="utf-8") as source:
+            return json.load(source)
     except (OSError, json.JSONDecodeError):
         return None
