@@ -620,7 +620,7 @@
     "northern-ireland": {
       "display_name": "Northern Ireland Premiership",
       "league_code": "northern-ireland",
-      "model_version": "northern-ireland-v0.6.4-explainable",
+      "model_version": "northern_ireland-v0.6.4-explainable",
       "enabled": true,
       "competition_type": "league",
       "model_family": "main_league",
@@ -642,7 +642,7 @@
     "usa-mls": {
       "display_name": "USA MLS",
       "league_code": "usa-mls",
-      "model_version": "usa-mls-v0.6.4-explainable",
+      "model_version": "usa-v0.6.4-explainable",
       "enabled": true,
       "competition_type": "league",
       "model_family": "main_league",
@@ -653,10 +653,10 @@
     "uefa-champions-league": {
       "display_name": "UEFA Champions League",
       "league_code": "uefa-champions-league",
-      "model_version": "uefa-champions-league-v0.6.4-explainable",
+      "model_version": "ucl-v0.6.4-explainable",
       "enabled": true,
       "competition_type": "cup",
-      "model_family": "cup",
+      "model_family": "main_league",
       "model_folder": "ucl",
       "footystats_league_id": 17128,
       "footystats_season_id": 17128
@@ -664,10 +664,10 @@
     "uefa-conference-league": {
       "display_name": "UEFA Conference League",
       "league_code": "uefa-conference-league",
-      "model_version": "uefa-conference-league-v0.6.4-explainable",
+      "model_version": "uecl-v0.6.4-explainable",
       "enabled": true,
       "competition_type": "cup",
-      "model_family": "cup",
+      "model_family": "main_league",
       "model_folder": "uecl",
       "footystats_league_id": 17130,
       "footystats_season_id": 17130

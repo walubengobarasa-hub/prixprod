@@ -490,6 +490,56 @@ def registry_status() -> dict[str, Any]:
     }
 
 
+
+@app.get("/registry/diagnostics", dependencies=[Depends(require_api_key)])
+def league_registration_diagnostics() -> dict[str, Any]:
+    """Inspect every league's model folder and manifest without loading sklearn objects."""
+    root = model_root_path()
+    results = []
+    for slug, raw in league_registry.list_leagues().items():
+        meta = dict(raw or {})
+        if meta.get("alias_for"):
+            continue
+        folder = root / str(meta.get("model_folder") or slug)
+        manifest = folder / "model_config.json"
+        error = None
+        manifest_data: dict[str, Any] = {}
+        if not folder.is_dir():
+            error = "Model folder missing"
+        elif not manifest.is_file():
+            error = "model_config.json missing"
+        else:
+            try:
+                manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (ValueError, OSError) as exc:
+                error = f"Unreadable model configuration: {exc.__class__.__name__}"
+        registry_family = str(meta.get("model_family") or "")
+        actual_family = str(manifest_data.get("model_family") or "")
+        if not error and registry_family and actual_family and registry_family != actual_family:
+            if not ({registry_family, actual_family} <= {"league_v064", "main_league"}):
+                error = f"Model family mismatch: registry={registry_family}, artifact={actual_family}"
+        season_id = meta.get("footystats_season_id") or meta.get("footystats_league_id")
+        if not error and not season_id:
+            error = "No configured FootyStats season ID"
+        results.append({
+            "league_slug": slug,
+            "display_name": meta.get("display_name") or meta.get("name") or slug,
+            "enabled": bool(meta.get("enabled", True)),
+            "competition_type": meta.get("competition_type", "league"),
+            "footystats_league_id": meta.get("footystats_league_id"),
+            "footystats_season_id": season_id,
+            "model_folder": str(meta.get("model_folder") or slug),
+            "season_id": season_id,
+            "registry_model_family": registry_family,
+            "artifact_model_family": actual_family or None,
+            "artifact_model_version": manifest_data.get("model_version"),
+            "model_version": manifest_data.get("model_version") or meta.get("model_version"),
+            "status": "disabled" if not meta.get("enabled", True) else ("error" if error else "registered"),
+            "error": error,
+        })
+    return {"registered_leagues": len(results), "failed": sum(x["status"] == "error" for x in results),
+            "registry_errors": league_registry.validate(), "leagues": results}
+
 @app.post("/registry/reload", dependencies=[Depends(require_api_key)])
 def reload_registry() -> dict[str, Any]:
     league_registry.reload()
