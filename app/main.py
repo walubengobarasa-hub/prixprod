@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import time
+import tempfile
 from pathlib import Path
 
 from datetime import date as date_type, datetime, timezone
@@ -15,6 +16,7 @@ from zoneinfo import ZoneInfo
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -39,6 +41,7 @@ from app.schemas import (
 )
 from app.security import require_api_key
 from app.deployment_manager import deploy_release, rollback_release
+from app.model_folder_installer import install_missing_models, MAX_ARCHIVE_BYTES
 from app.storage import cache_path, read_cache, write_cache
 
 IS_PRODUCTION = settings.app_env.lower() in {"production", "prod"}
@@ -344,6 +347,40 @@ def _mock_fixture_to_footystats_raw(payload: MockFixturePredictionRequest) -> di
             raw[key] = value
     return raw
 
+
+
+@app.post("/admin/models/install-missing", dependencies=[Depends(require_api_key)])
+async def admin_install_missing_models(request: Request) -> dict[str, Any]:
+    """Accept a raw application/zip upload; install only missing model folders.
+
+    Keeps the entire archive and sklearn models out of Python RAM.
+    Does not modify leagues.json or existing model folders.
+    """
+    content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if content_type not in ("application/zip", "application/octet-stream"):
+        raise HTTPException(status_code=415, detail="Send a raw ZIP file with Content-Type: application/zip")
+    length = request.headers.get("content-length")
+    if length and int(length) > MAX_ARCHIVE_BYTES:
+        raise HTTPException(status_code=413, detail="ZIP upload exceeds 60 MiB limit")
+    upload_path = None
+    root = model_root_path()
+    root.mkdir(parents=True, exist_ok=True)
+    try:
+        with tempfile.NamedTemporaryFile(dir=root, prefix=".prix-model-upload-", suffix=".zip", delete=False) as stream:
+            upload_path = Path(stream.name)
+            total = 0
+            async for part in request.stream():
+                total += len(part)
+                if total > MAX_ARCHIVE_BYTES:
+                    raise HTTPException(status_code=413, detail="ZIP upload exceeds 60 MiB limit")
+                stream.write(part)
+        try:
+            return await run_in_threadpool(install_missing_models, upload_path)
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        if upload_path is not None:
+            upload_path.unlink(missing_ok=True)
 
 
 class AdminRegistryApplyRequest(BaseModel):
