@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     minimum_team_history: int = 3
     maximum_season_staleness_days: int = 370
     max_cached_league_models: int = Field(default=1, validation_alias=AliasChoices("PRIX_MAX_CACHED_LEAGUE_MODELS", "MAX_CACHED_LEAGUE_MODELS"))
-    heavy_request_wait_seconds: float = Field(default=3.0, ge=0.1, le=30.0, validation_alias="PRIX_HEAVY_REQUEST_WAIT_SECONDS")
+    heavy_request_wait_seconds: float = Field(default=10.0, ge=0.1, le=30.0, validation_alias="PRIX_HEAVY_REQUEST_WAIT_SECONDS")
     feature_contract_version: str = "v0.6.4"
     prediction_contract_version: str = "v0.6.4"
     candidate_rule_version: str = "2026-07-18"

@@ -869,6 +869,10 @@ def predict_eligible(payload: EligiblePredictionRequest) -> EligiblePredictionRe
             else:
                 status = "healthy"
             league_warnings: list[str] = []
+            if candidates and not league_eligible:
+                league_warnings.append(
+                    "Candidates produced but none met the public eligibility and approval gates; inspect model review-only market settings and confidence thresholds."
+                )
             if sync.get("stale_season"):
                 league_warnings.append(
                     f"FootyStats data ends at {sync.get('latest_data_match_date')}; verify the current season ID."
@@ -876,6 +880,11 @@ def predict_eligible(payload: EligiblePredictionRequest) -> EligiblePredictionRe
             if rows and all(not bool((row.feature_meta or {}).get("passed")) for row in rows):
                 league_warnings.append("All live feature rows failed the feature-quality gate.")
                 status = "feature_failure"
+            _memory_logger.info(
+                "prediction_league_result slug=%s status=%s fixtures=%s features=%s candidates=%s eligible=%s reviewed=%s",
+                league_slug, status, sync["fixture_count"], len(rows), len(candidates),
+                len(league_eligible), len(candidates) - len(league_eligible),
+            )
             summaries.append(LeaguePredictionSummary(
                 league_slug=league_slug,
                 league_name=sync.get("league_name"),
@@ -891,6 +900,7 @@ def predict_eligible(payload: EligiblePredictionRequest) -> EligiblePredictionRe
                 warnings=league_warnings,
             ))
         except Exception as exc:
+            _memory_logger.exception("prediction_league_failed slug=%s error_type=%s", league_slug, type(exc).__name__)
             summaries.append(LeaguePredictionSummary(
                 league_slug=league_slug,
                 status="failed",

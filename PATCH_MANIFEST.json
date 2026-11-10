@@ -1,0 +1,46 @@
+{
+  "date": "2026-11-10",
+  "laravel_files": [
+    "app/Http/Controllers/AdminTicketController.php",
+    "app/Services/TicketGenerationQueueService.php",
+    "app/Services/TicketGenerationBrowserWorker.php",
+    "app/Services/PrixModelApiService.php",
+    "app/Console/Commands/PrixRunQueuedTicketGeneration.php",
+    "app/Services/StripeCheckoutService.php",
+    "app/Http/Controllers/StripePaymentController.php",
+    "app/Supports/ModelLeagueSlug.php",
+    "config/prix_model.php",
+    "resources/views/admin/prix-tickets.blade.php",
+    "app/Models/PredictionLeague.php",
+    "app/Services/ModelArtifactService.php",
+    "app/Http/Controllers/AdminModelTrainingController.php",
+    "resources/views/admin/model-training-competitions.blade.php"
+  ],
+  "fastapi_files": [
+    "app/main.py",
+    "app/config.py"
+  ],
+  "based_on": [
+    "priapp_stripe_checkout_fixed.zip",
+    "Prix_Laravel_7_Leagues_Patch.zip",
+    "Prix_FastAPI_App_Scripts_Patched.zip"
+  ],
+  "sha256": {
+    "laravel/app/Http/Controllers/AdminTicketController.php": "f3ca28ac4e831e1d8da156adb426680f616a63eb6bc32729b4f7fa7b4fe2bb34",
+    "laravel/app/Services/TicketGenerationQueueService.php": "ecfa2dd3b7c43ff950e3f7645b4e979a4d925ea13aae8b70fa40f29bc1c1cb04",
+    "laravel/app/Services/TicketGenerationBrowserWorker.php": "3d32e52acb7c8c63fdd20454a0f7fb5a447e596c62576ec979bb84b53b1bc596",
+    "laravel/app/Services/PrixModelApiService.php": "7202ab0f72f5fbe73c40a0d086f3a6ff862536d0346d3265578efcb590914b7d",
+    "laravel/app/Console/Commands/PrixRunQueuedTicketGeneration.php": "4103bf0943b210cab6d43ef2a89e910043d76ffb4397aa01520309b1b60bc5b1",
+    "laravel/app/Services/StripeCheckoutService.php": "c0c552ff4edbd893bfaf2fee72fe7cd92813502ea8ac0bed235aa8c61c621f93",
+    "laravel/app/Http/Controllers/StripePaymentController.php": "ab83956e6df1c9d68b9d7db82da45c6809013604a15a7483eb024b1bf24fa6aa",
+    "laravel/app/Supports/ModelLeagueSlug.php": "5cb2b420a41db9f7191300968def806201ed4f7db4670f058af55931cbcc087a",
+    "laravel/config/prix_model.php": "52b8018af01b1670cbc1f2f985073860131cceaae4fa8d2664c747401a69b31e",
+    "laravel/resources/views/admin/prix-tickets.blade.php": "58ac33baaf76212cd789d08c8377825cd6103d40d674df75e17c76e45d2a0c39",
+    "laravel/app/Models/PredictionLeague.php": "d309d7ca3e543f89b220fef3d61a204129cdc71edfb2110dbd43271e6d78e908",
+    "laravel/app/Services/ModelArtifactService.php": "1b8c4cf95d2e27c39923d1f3ea0f31617bbb78844c076a12dcbb586cb98b01b4",
+    "laravel/app/Http/Controllers/AdminModelTrainingController.php": "889af008472a1bc3bd1346a24c51f2240a6bf8ada168dcb95ca3715777b2ecdf",
+    "laravel/resources/views/admin/model-training-competitions.blade.php": "e596c6ddbbc5b0fc64a5bb2eb5156e09ebfcf32808f6fea31ca41415934b1e8c",
+    "fastapi/app/main.py": "11feb4a651fc3b560bad865befc4723dd681a0c80ce819617f2cc6efa39d146c",
+    "fastapi/app/config.py": "2ae3d8706150cbfaec493cdacde772cd45c8efc057d6bad2395d18e5f2d03773"
+  }
+}
