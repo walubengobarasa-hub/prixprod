@@ -1,0 +1,38 @@
+{
+  "league_slug": "denmark-1st-division",
+  "league_name": "Denmark 1st Division",
+  "model_version": "denmark-1st-division-v0.6.4-offline-candidate",
+  "rows_total": 2142,
+  "train_rows": 1758,
+  "validation_rows": 192,
+  "test_rows": 192,
+  "seasons": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "odds_available_rate": 0.9855275443510738,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "main_league",
+  "model_family": "league_v064",
+  "deployment_status": "pending_validation",
+  "sklearn_training_version": "1.8.0",
+  "candidate_only": true,
+  "trained_at_utc": "2026-11-10T08:51:09.484192+00:00"
+}

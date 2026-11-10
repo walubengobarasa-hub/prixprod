@@ -671,6 +671,83 @@
       "model_folder": "uecl",
       "footystats_league_id": 17130,
       "footystats_season_id": 17130
+    },
+    "england-efl-trophy": {
+      "display_name": "England EFL Trophy",
+      "league_code": "england-efl-trophy",
+      "model_version": "england-efl-trophy-v0.6.4-offline-candidate",
+      "enabled": true,
+      "competition_type": "domestic_cup",
+      "model_family": "domestic_cup_v1",
+      "model_folder": "england-efl-trophy",
+      "footystats_league_id": 17730,
+      "footystats_season_id": 17730
+    },
+    "europe-uefa-women-s-champions-league": {
+      "display_name": "UEFA Women’s Champions League",
+      "league_code": "europe-uefa-women-s-champions-league",
+      "model_version": "europe-uefa-women-s-champions-league-v0.6.4-offline-candidate",
+      "enabled": true,
+      "competition_type": "continental_cup",
+      "model_family": "continental_cup_v1",
+      "model_folder": "europe-uefa-women-s-champions-league",
+      "footystats_league_id": 17139,
+      "footystats_season_id": 17139
+    },
+    "international-africa-cup-of-nations-qualification": {
+      "display_name": "AFCON Qualification",
+      "league_code": "international-africa-cup-of-nations-qualification",
+      "model_version": "international-africa-cup-of-nations-qualification-v0.6.4-offline-candidate",
+      "enabled": true,
+      "competition_type": "international_competition",
+      "model_family": "international_competition_v1",
+      "model_folder": "international-africa-cup-of-nations-qualification",
+      "footystats_league_id": 16685,
+      "footystats_season_id": 16685
+    },
+    "international-concacaf-nations-league": {
+      "display_name": "CONCACAF Nations League",
+      "league_code": "international-concacaf-nations-league",
+      "model_version": "international-concacaf-nations-league-v0.6.4-offline-candidate",
+      "enabled": true,
+      "competition_type": "international_competition",
+      "model_family": "international_competition_v1",
+      "model_folder": "international-concacaf-nations-league",
+      "footystats_league_id": 17471,
+      "footystats_season_id": 17471
+    },
+    "international-uefa-nations-league": {
+      "display_name": "UEFA Nations League",
+      "league_code": "international-uefa-nations-league",
+      "model_version": "international-uefa-nations-league-v0.6.4-offline-candidate",
+      "enabled": true,
+      "competition_type": "international_competition",
+      "model_family": "international_competition_v1",
+      "model_folder": "international-uefa-nations-league",
+      "footystats_league_id": 16808,
+      "footystats_season_id": 16808
+    },
+    "jamaica-jamaica-national-premier-league": {
+      "display_name": "Jamaica National Premier League",
+      "league_code": "jamaica-jamaica-national-premier-league",
+      "model_version": "jamaica-jamaica-national-premier-league-v0.6.4-offline-candidate",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "league_v064",
+      "model_folder": "jamaica-jamaica-national-premier-league",
+      "footystats_league_id": 17930,
+      "footystats_season_id": 17930
+    },
+    "denmark-1st-division": {
+      "display_name": "Denmark 1st Division",
+      "league_code": "denmark-1st-division",
+      "model_version": "denmark-1st-division-v0.6.4-offline-candidate",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "league_v064",
+      "model_folder": "denmark-1st-division",
+      "footystats_league_id": 17288,
+      "footystats_season_id": 17288
     }
   }
 }

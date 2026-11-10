@@ -1,0 +1,37 @@
+{
+  "league_slug": "england-efl-trophy",
+  "league_name": "England EFL Trophy",
+  "model_version": "england-efl-trophy-v0.6.4-offline-candidate",
+  "rows_total": 1267,
+  "train_rows": 1013,
+  "validation_rows": 127,
+  "test_rows": 127,
+  "seasons": [
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "odds_available_rate": 0.8610891870560379,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "domestic_cup",
+  "model_family": "domestic_cup_v1",
+  "deployment_status": "pending_validation",
+  "sklearn_training_version": "1.8.0",
+  "candidate_only": true,
+  "trained_at_utc": "2026-11-10T08:48:23.674005+00:00"
+}
