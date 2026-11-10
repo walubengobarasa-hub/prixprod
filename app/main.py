@@ -26,7 +26,7 @@ from app.feature_builder import build_live_feature_rows_from_footystats
 from app.footystats_client import footystats_client
 from app.league_registry import league_registry
 from app.model_registry import model_registry
-from app.predictor import predict_feature_rows
+from app.predictor import predict_feature_rows, _market_status
 from app.schemas import (
     EligiblePredictionRequest,
     EligiblePredictionResponse,
@@ -491,8 +491,9 @@ def models() -> dict[str, Any]:
                     "fitted_feature_count": len(loaded.model_feature_columns),
                     "available_modes": loaded.available_modes(),
                     "loaded_models": {key: value is not None for key, value in loaded.models.items()},
-                    "active_candidate_markets": ["double_chance", "over_1_5", "match_outcome"],
-                    "review_only_markets": ["btts", "over_2_5"],
+                    "active_candidate_markets": [market for market in ("double_chance", "over_1_5", "match_outcome") if _market_status(loaded.config, market) == "active"],
+                    "review_only_markets": [market for market in ("double_chance", "over_1_5", "match_outcome", "btts", "over_2_5") if _market_status(loaded.config, market) == "review_only"],
+                    "market_statuses": {market: _market_status(loaded.config, market) for market in ("double_chance", "over_1_5", "match_outcome", "btts", "over_2_5")},
                     "explainability_enabled": bool(loaded.config.get("explainability") or loaded.explainability_profile),
                 })
             except Exception as exc:
@@ -505,6 +506,34 @@ def models() -> dict[str, Any]:
         "registry_errors": league_registry.validate(),
         "leagues": leagues,
     }
+
+
+@app.get("/registry/export", dependencies=[Depends(require_api_key)])
+def export_registry_metadata() -> dict[str, Any]:
+    """Export the canonical/alias registry without deserializing model files.
+
+    Laravel's Import API Registry uses this small, authenticated response. It
+    avoids loading every sklearn model via /models on a memory-limited service.
+    """
+    leagues = []
+    for slug, raw in league_registry.list_leagues().items():
+        meta = dict(raw or {})
+        leagues.append({
+            "league_slug": slug,
+            "display_name": meta.get("display_name") or meta.get("name") or slug,
+            "alias_for": meta.get("alias_for"),
+            "model_folder": meta.get("model_folder") or meta.get("alias_for") or slug,
+            "model_version": meta.get("model_version"),
+            "enabled": bool(meta.get("enabled", True)),
+            "footystats_league_id": meta.get("footystats_league_id"),
+            "footystats_season_id": meta.get("footystats_season_id"),
+            "competition_type": meta.get("competition_type", "league"),
+            "competition_format": meta.get("competition_format"),
+            "model_family": meta.get("model_family"),
+            "uses_team_strength": meta.get("uses_team_strength", False),
+            "uses_league_strength": meta.get("uses_league_strength", False),
+        })
+    return {"leagues": leagues, "registry_errors": league_registry.validate()}
 
 
 @app.get("/registry/status", dependencies=[Depends(require_api_key)])
@@ -563,6 +592,9 @@ def league_registration_diagnostics() -> dict[str, Any]:
             "display_name": meta.get("display_name") or meta.get("name") or slug,
             "enabled": bool(meta.get("enabled", True)),
             "competition_type": meta.get("competition_type", "league"),
+            "competition_format": meta.get("competition_format", "round_robin"),
+            "uses_team_strength": bool(meta.get("uses_team_strength", False)),
+            "uses_league_strength": bool(meta.get("uses_league_strength", False)),
             "footystats_league_id": meta.get("footystats_league_id"),
             "footystats_season_id": season_id,
             "model_folder": str(meta.get("model_folder") or slug),

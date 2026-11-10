@@ -1,5 +1,5 @@
 from __future__ import annotations
-import base64, json, shutil, tempfile, zipfile
+import base64, json, re, shutil, tempfile, zipfile
 from pathlib import Path
 from typing import Any
 from app.config import model_root_path, model_release_root_path
@@ -26,8 +26,11 @@ def _models_dir(extract: Path) -> Path:
 def deploy_release(release_key: str, archive_base64: str, registry: dict[str, Any]) -> dict[str, Any]:
     if not release_key or not isinstance(registry, dict) or not isinstance(registry.get('leagues'), dict):
         raise ValueError('release_key and a leagues registry are required.')
+    if not re.fullmatch(r'[a-zA-Z0-9_-]{1,96}', release_key):
+        raise ValueError('Invalid release_key. Use letters, digits, hyphens, or underscores.')
     rel = RELEASE_ROOT / release_key
-    if rel.exists(): shutil.rmtree(rel)
+    if rel.exists():
+        raise ValueError('Release key already exists; refusing to replace a recovery snapshot.')
     rel.mkdir(parents=True)
     archive = rel / 'models.zip'
     archive.write_bytes(base64.b64decode(archive_base64.encode('ascii')))
@@ -60,21 +63,75 @@ def deploy_release(release_key: str, archive_base64: str, registry: dict[str, An
         for slug in changed:
             dst=target/slug; shutil.rmtree(dst,ignore_errors=True)
             if (backup/slug).exists(): shutil.copytree(backup/slug,dst)
-        if (backup/'leagues.json').exists(): shutil.copy2(backup/'leagues.json',target/'leagues.json')
+        if (backup/'leagues.json').exists():
+            shutil.copy2(backup/'leagues.json',target/'leagues.json')
+        else:
+            (target/'leagues.json').unlink(missing_ok=True)
         league_registry.reload(); model_registry.clear()
         raise
 
 def rollback_release(release_key: str) -> dict[str, Any]:
-    rel=RELEASE_ROOT/release_key
-    reg=rel/'registry.json'
-    extracted=rel/'extract'
-    if not reg.exists() or not extracted.exists(): raise FileNotFoundError('Release snapshot is not available on this service.')
-    incoming=_models_dir(extracted); target=model_root_path(); changed=[]
-    for src in incoming.iterdir():
-        if not src.is_dir() or not (src/'model_config.json').exists(): continue
-        dst=target/src.name; shutil.rmtree(dst,ignore_errors=True); shutil.copytree(src,dst); changed.append(src.name)
-    shutil.copy2(reg,target/'leagues.json')
-    league_registry.reload(); model_registry.clear()
-    errors=league_registry.validate(); bad=[r for r in model_registry.validate_all() if not r.get('ok') and r.get('league_slug') in changed]
-    if errors or bad: raise ValueError('Rollback validation failed: '+json.dumps({'registry_errors':errors,'models':bad})[:4000])
-    return {'ok':True,'release_key':release_key,'restored_models':changed,'registered_leagues':len(league_registry.enabled_slugs())}
+    """Restore the pre-deployment snapshot, not the newly deployed release.
+
+    New model folders absent before deployment are removed; older folders and
+    leagues.json are restored from RELEASE_ROOT/<key>/backup. A temporary
+    rollback snapshot allows recovery if validation of the restore fails.
+    """
+    if not re.fullmatch(r"[a-zA-Z0-9_-]{1,96}", release_key):
+        raise ValueError("Invalid release_key")
+    rel = RELEASE_ROOT / release_key
+    manifest = rel / "release.json"
+    backup = rel / "backup"
+    if not manifest.is_file() or not backup.is_dir():
+        raise FileNotFoundError("Completed release backup is not available on this service")
+    changed = json.loads(manifest.read_text(encoding="utf-8")).get("changed_models") or []
+    if not changed or any(not isinstance(slug, str) or not re.fullmatch(r"[a-zA-Z0-9_-]+", slug) for slug in changed):
+        raise ValueError("Unsafe or empty release snapshot")
+    target = model_root_path()
+    if not target.is_dir():
+        raise FileNotFoundError("Model root is missing")
+    with tempfile.TemporaryDirectory(prefix=".prix-rollback-", dir=target) as tmp:
+        before_rollback = Path(tmp)
+        old_registry = target / "leagues.json"
+        if old_registry.exists():
+            shutil.copy2(old_registry, before_rollback / "leagues.json")
+        for slug in changed:
+            folder = target / slug
+            if folder.exists():
+                shutil.copytree(folder, before_rollback / slug)
+        try:
+            for slug in changed:
+                dst = target / slug
+                shutil.rmtree(dst, ignore_errors=True)
+                if (backup / slug).is_dir():
+                    shutil.copytree(backup / slug, dst)
+            if (backup / "leagues.json").is_file():
+                shutil.copy2(backup / "leagues.json", target / "leagues.json")
+            else:
+                (target / "leagues.json").unlink(missing_ok=True)
+            league_registry.reload()
+            model_registry.clear()
+            errors = league_registry.validate()
+            if errors:
+                raise ValueError("Rolled-back registry validation failed: " + json.dumps(errors)[:1200])
+        except Exception:
+            # Put the currently deployed release back if rollback itself failed.
+            for slug in changed:
+                dst = target / slug
+                shutil.rmtree(dst, ignore_errors=True)
+                if (before_rollback / slug).is_dir():
+                    shutil.copytree(before_rollback / slug, dst)
+            if (before_rollback / "leagues.json").is_file():
+                shutil.copy2(before_rollback / "leagues.json", target / "leagues.json")
+            else:
+                (target / "leagues.json").unlink(missing_ok=True)
+            league_registry.reload()
+            model_registry.clear()
+            raise
+    return {
+        "ok": True,
+        "release_key": release_key,
+        "restored_models": [slug for slug in changed if (backup / slug).is_dir()],
+        "removed_new_models": [slug for slug in changed if not (backup / slug).is_dir()],
+        "registered_leagues": len(league_registry.enabled_slugs()),
+    }

@@ -161,8 +161,6 @@ def _market_rule(config: dict[str, Any], market: str) -> dict[str, Any]:
 def _market_status(config: dict[str, Any], market: str) -> str:
     if market in REVIEW_ONLY_MARKETS:
         return "review_only"
-    if market == "match_outcome":
-        return "active"
     rule = _market_rule(config, market)
     status = str(rule.get("status", "active")).strip().lower()
     if status in {"active_pending_threshold_review", "active_candidate", "candidate", "enabled"}:

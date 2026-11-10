@@ -56,8 +56,9 @@ def static_validation() -> dict:
     model_by_slug = {row["league_slug"]: row for row in model_results}
 
     failures: list[str] = []
-    if sklearn.__version__ != "1.6.1":
-        failures.append(f"scikit-learn is {sklearn.__version__}; deployment must use 1.6.1")
+    # The registry may contain independently trained v0.6.4 models with different
+    # sklearn versions. Loading validation below checks candidate compatibility.
+    # Do not reject a working runtime solely because it is not the old Colab pin.
     registry_errors = league_registry.validate()
     if registry_errors:
         failures.extend(["registry: " + error for error in registry_errors])

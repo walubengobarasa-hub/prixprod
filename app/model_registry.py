@@ -114,6 +114,22 @@ class LoadedLeagueModel:
         elif expected_family and declared_family != expected_family:
             raise ValueError(f"Model family mismatch for {league_slug}: expected {expected_family}, got {declared_family or 'missing'}")
         self.model_version = self.config.get("model_version", meta.get("model_version", "unknown"))
+        # New candidate artifacts were produced under scikit-learn 1.8.0. Pickle
+        # deserialization with a different minor version is unsupported; fail
+        # clearly instead of returning broken predictions. Legacy models retain
+        # their existing compatibility behavior and are not subjected to a new pin.
+        if str(self.model_version).endswith("-offline-candidate"):
+            training_meta = self._load_json_optional("model_metadata_v064.json")
+            training_version = str(training_meta.get("sklearn_training_version") or "").strip()
+            if not training_version:
+                raise ValueError(f"{league_slug}: missing sklearn_training_version in candidate model metadata")
+            from sklearn import __version__ as serving_version
+            if training_version.split(".")[:2] != serving_version.split(".")[:2]:
+                raise RuntimeError(
+                    f"{league_slug}: candidate models trained with scikit-learn {training_version}; "
+                    f"serving runtime has {serving_version}. Use the matching runtime or retrain; "
+                    "do not change model approval settings to bypass this check."
+                )
         self.explainability_profile = self._load_json_optional("explainability_profile.json")
         self.feature_importances = self._load_feature_importances()
         self.modes: dict[str, dict[str, Any]] = {}
