@@ -1,0 +1,194 @@
+{
+  "info": {
+    "name": "Prix - Replace 7 Retrained Model Folders (sklearn 1.6.1)",
+    "description": "Manual sequence only; item 5 rolls back. Uses auth key, uploads ZIP raw binary.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://YOUR-RENDER-SERVICE.onrender.com"
+    },
+    {
+      "key": "api_key",
+      "value": "SET_LOCALLY_IN_POSTMAN"
+    },
+    {
+      "key": "backup_id",
+      "value": "PASTE_BACKUP_ID_FROM_REPLACE_RESPONSE"
+    }
+  ],
+  "item": [
+    {
+      "name": "1 — Check registry before replacing",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/registry/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registry",
+            "status"
+          ]
+        }
+      }
+    },
+    {
+      "name": "2 — Replace seven model folders (select ZIP in binary body)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/zip"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/models/replace-seven-1-6-1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "admin",
+            "models",
+            "replace-seven-1-6-1"
+          ]
+        },
+        "body": {
+          "mode": "file",
+          "file": {
+            "src": ""
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  const body = pm.response.json();",
+              "  if (body.backup_id) pm.collectionVariables.set(\"backup_id\", body.backup_id);",
+              "}",
+              "pm.test(\"Seven models replaced\", () => pm.expect(pm.response.json().replaced_count).to.eql(7));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3 — Check registry after replacing",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/registry/status",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "registry",
+            "status"
+          ]
+        }
+      }
+    },
+    {
+      "name": "4 — Load one retrained league from disk",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/models/europe-uefa-women-s-champions-league/reload",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "models",
+            "europe-uefa-women-s-champions-league",
+            "reload"
+          ]
+        }
+      }
+    },
+    {
+      "name": "5 — Rollback seven models (ONLY IF NEEDED)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{api_key}}"
+          },
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/admin/models/rollback-seven-1-6-1",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "admin",
+            "models",
+            "rollback-seven-1-6-1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"backup_id\": \"{{backup_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ]
+}

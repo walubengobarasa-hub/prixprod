@@ -7,6 +7,7 @@ import os
 import re
 import time
 import tempfile
+import zipfile
 from pathlib import Path
 
 from datetime import date as date_type, datetime, timezone
@@ -42,6 +43,7 @@ from app.schemas import (
 from app.security import require_api_key
 from app.deployment_manager import deploy_release, rollback_release
 from app.model_folder_installer import install_missing_models, MAX_ARCHIVE_BYTES
+from app.candidate_replacement import replace_seven_candidates, rollback_seven_candidates
 from app.storage import cache_path, read_cache, write_cache
 
 IS_PRODUCTION = settings.app_env.lower() in {"production", "prod"}
@@ -381,6 +383,65 @@ async def admin_install_missing_models(request: Request) -> dict[str, Any]:
     finally:
         if upload_path is not None:
             upload_path.unlink(missing_ok=True)
+
+
+@app.post("/admin/models/replace-seven-1-6-1", dependencies=[Depends(require_api_key)])
+async def admin_replace_seven_candidates(request: Request) -> dict[str, Any]:
+    """Stream the exact audited ZIP and safely replace only seven candidate folders."""
+    content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if content_type not in {"application/zip", "application/octet-stream"}:
+        raise HTTPException(status_code=415, detail="Use Body > binary and Content-Type: application/zip")
+    length = request.headers.get("content-length")
+    if length and int(length) > MAX_ARCHIVE_BYTES:
+        raise HTTPException(status_code=413, detail="ZIP exceeds 60 MiB")
+    root = model_root_path()
+    root.mkdir(parents=True, exist_ok=True)
+    upload_path = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=root, prefix=".prix-seven-upload-", suffix=".zip", delete=False) as file:
+            upload_path = Path(file.name)
+            received = 0
+            async for chunk in request.stream():
+                received += len(chunk)
+                if received > MAX_ARCHIVE_BYTES:
+                    raise HTTPException(status_code=413, detail="ZIP exceeds 60 MiB")
+                file.write(chunk)
+        try:
+            await asyncio.wait_for(_heavy_request_lock.acquire(), timeout=30)
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=503, detail="Prediction generation is busy; retry when the queue is idle")
+        try:
+            result = await run_in_threadpool(replace_seven_candidates, upload_path)
+            model_registry.clear()
+            return result
+        except (ValueError, OSError, zipfile.BadZipFile) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        finally:
+            _heavy_request_lock.release()
+    finally:
+        if upload_path:
+            upload_path.unlink(missing_ok=True)
+
+
+class SevenCandidateRollback(BaseModel):
+    backup_id: str
+
+
+@app.post("/admin/models/rollback-seven-1-6-1", dependencies=[Depends(require_api_key)])
+async def admin_rollback_seven_candidates(payload: SevenCandidateRollback) -> dict[str, Any]:
+    try:
+        await asyncio.wait_for(_heavy_request_lock.acquire(), timeout=30)
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=503, detail="Prediction generation is busy; retry when the queue is idle")
+    try:
+        try:
+            result = await run_in_threadpool(rollback_seven_candidates, payload.backup_id)
+            model_registry.clear()
+            return result
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        _heavy_request_lock.release()
 
 
 class AdminRegistryApplyRequest(BaseModel):

@@ -1,0 +1,17 @@
+{
+  "patch_name": "Prix Render seven model replacement endpoint",
+  "source_files": [
+    "app/main.py",
+    "app/candidate_replacement.py"
+  ],
+  "app_main_sha256": "a6f07cfb4bf30f0ed2bf61f8467b7458e38d1c50f2fbf236471f4762bb4aab3d",
+  "candidate_replacement_sha256": "3d40be694b553e92f162017f22cf457e5f83f52823f663f2021ca6bda062ac19",
+  "expected_model_archive_sha256": "b26e3d6e7e59566d0c8c0fc31a4f13f8a206a186fa4be69a955476f2e4174367",
+  "endpoints": [
+    "POST /admin/models/replace-seven-1-6-1",
+    "POST /admin/models/rollback-seven-1-6-1"
+  ],
+  "route_import_test": "passed",
+  "python_compile_test": "passed",
+  "model_archive_included": false
+}
