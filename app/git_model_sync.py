@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 LOG = logging.getLogger("prix.git_model_sync")
-SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+SLUG = re.compile(r"^[a-z0-9]+(?:[-_][a-z0-9]+)*$")
 
 
 def _flag(name: str, default: bool = False) -> bool:
