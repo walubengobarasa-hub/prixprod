@@ -70,10 +70,11 @@ Model Data/
 *_training_*.pkl
 *_debug_*.pkl
 *_experiment_*.pkl
-*_review_*.pkl
+# *_review_*.pkl
 
 # OS / archive files
 *.zip
 *.tar
 *.tar.gz
 *.rar
+
