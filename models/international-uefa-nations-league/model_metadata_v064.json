@@ -1,0 +1,31 @@
+{
+  "league_slug": "international-uefa-nations-league",
+  "league_name": "UEFA Nations League",
+  "model_version": "international-uefa-nations-league-v0.6.4-offline-candidate",
+  "rows_total": 662,
+  "train_rows": 312,
+  "validation_rows": 162,
+  "test_rows": 188,
+  "seasons": [
+    2018,
+    2020,
+    2022,
+    2024
+  ],
+  "odds_available_rate": 0.9803625377643505,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "international_competition",
+  "model_family": "international_competition_v1",
+  "deployment_status": "pending_validation",
+  "sklearn_training_version": "1.8.0",
+  "candidate_only": true,
+  "trained_at_utc": "2026-11-10T08:49:14.864829+00:00"
+}

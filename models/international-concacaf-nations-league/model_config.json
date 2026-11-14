@@ -1,0 +1,115 @@
+{
+  "league_slug": "international-concacaf-nations-league",
+  "league_name": "CONCACAF Nations League",
+  "competition_type": "international_competition",
+  "model_family": "international_competition_v1",
+  "model_version": "international-concacaf-nations-league-v0.6.4-offline-candidate",
+  "model_mode": "odds_aware",
+  "feature_columns_file": "feature_columns.json",
+  "models": {
+    "over15": "international-concacaf-nations-league_over15_base_prod_model.pkl",
+    "under15_risk": "international-concacaf-nations-league_under15_risk_model.pkl",
+    "btts": "international-concacaf-nations-league_btts_base_review_model.pkl",
+    "over25": "international-concacaf-nations-league_over25_base_review_model.pkl",
+    "under25_risk": "international-concacaf-nations-league_under25_risk_model.pkl",
+    "outcome": "international-concacaf-nations-league_outcome_calibrated_model.pkl",
+    "favorite_win": "international-concacaf-nations-league_favorite_win_support_model.pkl",
+    "favorite_avoid_defeat": "international-concacaf-nations-league_favorite_avoid_defeat_support_model.pkl",
+    "draw_risk": "international-concacaf-nations-league_draw_risk_support_model.pkl",
+    "first_goal_window": "international-concacaf-nations-league_first_goal_window_model.pkl",
+    "winner_decision_window": "international-concacaf-nations-league_winner_decision_window_model.pkl"
+  },
+  "market_rules": {
+    "double_chance": {
+      "status": "review_only",
+      "public_threshold": 84,
+      "premium_threshold": 86,
+      "elite_threshold": 88,
+      "max_draw_risk": 34.0
+    },
+    "over_1_5": {
+      "status": "review_only",
+      "public_threshold": 82,
+      "premium_threshold": 84,
+      "elite_threshold": 86,
+      "max_under15_risk_prob": 0.22
+    },
+    "over_2_5": {
+      "status": "review_only",
+      "public_threshold": 86
+    },
+    "btts": {
+      "status": "review_only",
+      "public_threshold": 86
+    },
+    "match_outcome": {
+      "status": "review_only",
+      "public_threshold": 86,
+      "max_per_ticket": 1
+    },
+    "favorite_win": {
+      "status": "review_only"
+    },
+    "favorite_avoid_defeat": {
+      "status": "review_only"
+    },
+    "draw_risk": {
+      "status": "review_only"
+    },
+    "first_goal_window": {
+      "status": "explainability_only"
+    },
+    "winner_decision_window": {
+      "status": "explainability_only"
+    }
+  },
+  "ticket_rules": {
+    "allow_cross_league_packaging": true,
+    "free_safe_ticket": {
+      "enabled": true,
+      "markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "min_items": 3,
+      "max_items": 5,
+      "max_window_days": 3,
+      "min_avg_confidence": 86.0
+    },
+    "premium_mixed_ticket": {
+      "enabled": true,
+      "markets": [
+        "double_chance",
+        "over_1_5"
+      ],
+      "min_items": 3,
+      "max_items": 5,
+      "max_window_days": 3,
+      "min_avg_confidence": 87.0
+    },
+    "elite_ticket": {
+      "enabled": true,
+      "markets": [
+        "double_chance",
+        "over_1_5",
+        "match_outcome"
+      ],
+      "min_items": 2,
+      "max_items": 4,
+      "max_window_days": 3,
+      "min_avg_confidence": 88.0,
+      "market_caps": {
+        "match_outcome": 1
+      }
+    }
+  },
+  "explainability": {
+    "enabled": true,
+    "top_factors_count": 6,
+    "reason_codes_enabled": true,
+    "goal_timing_estimates_enabled": true,
+    "winner_decision_estimates_enabled": true
+  },
+  "deployment_status": "pending_validation",
+  "enabled": false
+}

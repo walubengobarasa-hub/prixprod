@@ -1,0 +1,30 @@
+{
+  "league_slug": "international-africa-cup-of-nations-qualification",
+  "league_name": "AFCON Qualification",
+  "model_version": "international-africa-cup-of-nations-qualification-v0.6.4-offline-candidate",
+  "rows_total": 446,
+  "train_rows": 312,
+  "validation_rows": 67,
+  "test_rows": 67,
+  "seasons": [
+    2021,
+    2023,
+    2025
+  ],
+  "odds_available_rate": 0.9618834080717489,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "international_competition",
+  "model_family": "international_competition_v1",
+  "deployment_status": "pending_validation",
+  "sklearn_training_version": "1.8.0",
+  "candidate_only": true,
+  "trained_at_utc": "2026-11-10T08:48:52.777694+00:00"
+}

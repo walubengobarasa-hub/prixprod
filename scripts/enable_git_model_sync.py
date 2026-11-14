@@ -1,41 +1,29 @@
-"""Apply additive, idempotent integration to the CURRENT FastAPI app/main.py.
+"""Idempotent migration helper for repos using the previous Git sync entrypoint.
 
-Never replaces main.py; preserves existing routes and release-specific patches.
+Current bundled app/main.py is already integrated; this tool is only for merges.
 """
 from pathlib import Path
-import shutil
 import sys
 
 root = Path(__file__).resolve().parent.parent
-main = root / "app" / "main.py"
-if not main.exists():
-    sys.exit(f"Cannot find {main}; place this patch in your FastAPI repository root")
-src = main.read_text(encoding="utf-8")
-anchor = "from app.league_registry import league_registry"
-insertion = (
-    "# Populate the persistent model root from Git BEFORE LeagueRegistry is loaded.\n"
-    "from app.git_model_sync import sync_git_models\n"
-    "_PRIX_GIT_SYNC_STATUS = sync_git_models()\n"
-)
-status_anchor = '@app.get("/registry/status", dependencies=[Depends(require_api_key)])'
-status_insertion = (
-    '@app.get("/registry/git-sync-status", dependencies=[Depends(require_api_key)])\n'
-    'def git_sync_status() -> dict[str, Any]:\n'
-    '    """Result of automatic Git model sync during this process startup."""\n'
-    '    return _PRIX_GIT_SYNC_STATUS\n\n\n'
-)
-if anchor not in src or status_anchor not in src:
-    sys.exit("Expected integration anchor(s) not found. App unchanged; merge manually.")
-updated = src
-if insertion not in updated:
-    updated = updated.replace(anchor, insertion + anchor, 1)
-if status_insertion not in updated:
-    updated = updated.replace(status_anchor, status_insertion + status_anchor, 1)
-if updated != src:
-    backup = main.with_suffix('.py.before-git-sync')
-    if not backup.exists():
-        shutil.copy2(main, backup)
-    main.write_text(updated, encoding="utf-8")
-    print(f"Integrated Git model sync into {main} (original saved to {backup.name})")
-else:
-    print("Git model sync already integrated — no changes")
+path = root / 'app' / 'main.py'
+if not path.is_file():
+    sys.exit('Expected app/main.py in repository')
+src = path.read_text(encoding='utf-8')
+old = 'from app.git_model_sync import sync_git_models\n_PRIX_GIT_SYNC_STATUS = sync_git_models()'
+new = 'from app.github_model_release import sync_render_models\n_PRIX_GIT_SYNC_STATUS = sync_render_models()'
+if old in src:
+    src = src.replace(old, new, 1)
+elif new not in src:
+    anchor = 'from app.league_registry import league_registry'
+    if anchor not in src:
+        sys.exit('Could not find registry anchor to integrate safely')
+    src = src.replace(anchor, '# Synchronize GitHub Release models before registry loads\n' + new + '\n' + anchor, 1)
+status_route = '@app.get("/registry/git-sync-status", dependencies=[Depends(require_api_key)])'
+if status_route not in src:
+    anchor = '@app.get("/registry/status", dependencies=[Depends(require_api_key)])'
+    if anchor not in src:
+        sys.exit('Could not find status endpoint anchor; no changes written')
+    src = src.replace(anchor, status_route + '\ndef git_sync_status():\n    return _PRIX_GIT_SYNC_STATUS\n\n\n' + anchor, 1)
+path.write_text(src, encoding='utf-8')
+print('GitHub Release sync integration present in app/main.py')

@@ -1,0 +1,30 @@
+{
+  "league_slug": "international-concacaf-nations-league",
+  "league_name": "CONCACAF Nations League",
+  "model_version": "international-concacaf-nations-league-v0.6.4-offline-candidate",
+  "rows_total": 319,
+  "train_rows": 223,
+  "validation_rows": 48,
+  "test_rows": 48,
+  "seasons": [
+    2022,
+    2023,
+    2024
+  ],
+  "odds_available_rate": 0.9905956112852664,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "international_competition",
+  "model_family": "international_competition_v1",
+  "deployment_status": "pending_validation",
+  "sklearn_training_version": "1.8.0",
+  "candidate_only": true,
+  "trained_at_utc": "2026-11-10T08:49:03.543575+00:00"
+}

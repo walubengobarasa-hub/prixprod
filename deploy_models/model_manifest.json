@@ -1,0 +1,758 @@
+{
+  "files": {
+    "england-championship/england-championship_btts_base_review_model.pkl": {
+      "sha256": "70ebc73d5c6991b6becbce63f0ca3468a1428dda66cf3b6a6de59e89cc4dc770",
+      "size": 10501666
+    },
+    "england-championship/england-championship_btts_feature_importance.csv": {
+      "sha256": "5190423acd2a42652540e21b70f89777891c185affb0f54e95cd98c9492b138e",
+      "size": 20054
+    },
+    "england-championship/england-championship_draw_risk_feature_importance.csv": {
+      "sha256": "e032992e9fe3da2f5b8ac1f29772aaf1d55180bd42cf5748bf3eb2db009368ad",
+      "size": 20062
+    },
+    "england-championship/england-championship_draw_risk_support_model.pkl": {
+      "sha256": "3845d8fa49fc5fb73d8010d78beee4a1429a74d4b7a36b14b4e51792a6832a22",
+      "size": 9403746
+    },
+    "england-championship/england-championship_eligible_prediction_candidates.csv": {
+      "sha256": "818d38b51f956e597efd13c17e39cf4b39ded025330adc00fc4d265572278261",
+      "size": 47964
+    },
+    "england-championship/england-championship_explainable_prediction_candidates.csv": {
+      "sha256": "479550d8299d37cc4bf2cba8aa2b257448c7d494d911de9c2dab14c0316c51cb",
+      "size": 3416630
+    },
+    "england-championship/england-championship_favorite_avoid_defeat_feature_importance.csv": {
+      "sha256": "03e4b79a09395850775255524955ffdabd8afbc64945214e46d632729811cfad",
+      "size": 20061
+    },
+    "england-championship/england-championship_favorite_avoid_defeat_support_model.pkl": {
+      "sha256": "1ab51c2cddb09ca37e19af947ce3aab9c9d63683e07c0c9ddff371cc49db8f8b",
+      "size": 9216562
+    },
+    "england-championship/england-championship_favorite_win_feature_importance.csv": {
+      "sha256": "737ca379c459b163b84391b1709499ce2dc80e24af47f3ef728b56a5e5284caa",
+      "size": 20069
+    },
+    "england-championship/england-championship_favorite_win_support_model.pkl": {
+      "sha256": "47b3e9fcc0c46e27c7e785f0ddc92f46fdba0bb8c649b1361a2517e187cd8527",
+      "size": 10179122
+    },
+    "england-championship/england-championship_first_goal_window_feature_importance.csv": {
+      "sha256": "93791194406d57abd253439d4c43f90add1cc013da4ede56c1d79cd581a99965",
+      "size": 20056
+    },
+    "england-championship/england-championship_first_goal_window_model.pkl": {
+      "sha256": "637c900781e0ee722ba5d2a449d5b363545372f949ad470580e4bc52967e917f",
+      "size": 14113082
+    },
+    "england-championship/england-championship_market_threshold_sweep.csv": {
+      "sha256": "b499ee5286b12dc014a8e87e23d32200e1f6ffdb8d6a6625bcc2fc05d39eeed9",
+      "size": 2579
+    },
+    "england-championship/england-championship_metrics.csv": {
+      "sha256": "cb67c34b61509866fdd4565cf51fc2bac66dd0ae76c4e939ffdd15dcb41bda2c",
+      "size": 1392
+    },
+    "england-championship/england-championship_outcome_calibrated_model.pkl": {
+      "sha256": "660ce9ada06af68e860b2ac151669dd1edff5a4b10fbd708244891538faa55be",
+      "size": 11846090
+    },
+    "england-championship/england-championship_outcome_feature_importance.csv": {
+      "sha256": "571863b66faca60bc8d600aa050f3cb98e3f9daad5f74b17de949399fa62953a",
+      "size": 20075
+    },
+    "england-championship/england-championship_over15_base_prod_model.pkl": {
+      "sha256": "c69161df41765238e1d3fc553c30fe3a0c5623b9451f3f5ee412542b72d6613c",
+      "size": 9611266
+    },
+    "england-championship/england-championship_over15_feature_importance.csv": {
+      "sha256": "dc85793c3aaa8858a256b13a7d26680949525a0b745460b635b81de3480cbe3f",
+      "size": 20056
+    },
+    "england-championship/england-championship_over25_base_review_model.pkl": {
+      "sha256": "6addd4424e1eaa58c269470409f2ca3c49e17b2b581bf8d25c94e132abd42898",
+      "size": 10357666
+    },
+    "england-championship/england-championship_over25_feature_importance.csv": {
+      "sha256": "74af1aae9c6ae9acf9848c59c8c31a72c827dbae4fbe4d1679e39e38163de784",
+      "size": 20068
+    },
+    "england-championship/england-championship_under15_risk_feature_importance.csv": {
+      "sha256": "dc85793c3aaa8858a256b13a7d26680949525a0b745460b635b81de3480cbe3f",
+      "size": 20056
+    },
+    "england-championship/england-championship_under15_risk_model.pkl": {
+      "sha256": "344d9eeab09db8cb3ead2f8540b875a85009b19f493c181bd6e07354d569c5e2",
+      "size": 9611266
+    },
+    "england-championship/england-championship_under25_risk_feature_importance.csv": {
+      "sha256": "74af1aae9c6ae9acf9848c59c8c31a72c827dbae4fbe4d1679e39e38163de784",
+      "size": 20068
+    },
+    "england-championship/england-championship_under25_risk_model.pkl": {
+      "sha256": "f427022e46307a5ceff5466c17e5eb8ce4bb8b854a37960a613702f1c465f86a",
+      "size": 10357666
+    },
+    "england-championship/england-championship_winner_decision_window_feature_importance.csv": {
+      "sha256": "61196d0c86527fd36ca1a0f384d1f58e226656b35b0bfdc622d4cdb72f0ffe6a",
+      "size": 20058
+    },
+    "england-championship/england-championship_winner_decision_window_model.pkl": {
+      "sha256": "fee725468853fe3e4b1fbfedbb32195a5e8483b1c456afeee7c5a08f28bd0a71",
+      "size": 13152546
+    },
+    "england-championship/explainability_profile.json": {
+      "sha256": "26e3bde311d4545f87d62cb875fa168f286be619bc30c2624b1bb14e37223cf1",
+      "size": 1117
+    },
+    "england-championship/feature_audit.csv": {
+      "sha256": "435a7cc7f23fde1498273b926fe8d5f3ec99f9433859efd64937a76c8df0beb5",
+      "size": 23055
+    },
+    "england-championship/feature_columns.json": {
+      "sha256": "44ff9590d7b94e617f49b1ebd9ee6d273b8545d5c92b6a3c5d5fef0b02e23465",
+      "size": 13420
+    },
+    "england-championship/model_config.json": {
+      "sha256": "9cf104ef80ae4ec940a54da162e1a64b4e8941957ee00e5f91e89b181f03d9d1",
+      "size": 3163
+    },
+    "england-championship/model_metadata_v064.json": {
+      "sha256": "ca2e67c2b86e6c60ec79be92d9318edf2f10543ce3065806bc8d074a9cdc3d37",
+      "size": 936
+    },
+    "england-efl-league-one/england-efl-league-one_btts_base_review_model.pkl": {
+      "sha256": "3abaaba535a8a8c5fbb31127a130f7106fad66a1ee8d2c2bfa054ba94c7daba8",
+      "size": 10213506
+    },
+    "england-efl-league-one/england-efl-league-one_btts_feature_importance.csv": {
+      "sha256": "4325f04d9ed791e7af4380b5ceb368236889f4d610dc77fb719e2106fcd50e5a",
+      "size": 20051
+    },
+    "england-efl-league-one/england-efl-league-one_draw_risk_feature_importance.csv": {
+      "sha256": "f9021697b1c183d7882fe836bd99cbe032791f99646da3b1a7797c9e4538a9a8",
+      "size": 20056
+    },
+    "england-efl-league-one/england-efl-league-one_draw_risk_support_model.pkl": {
+      "sha256": "000cdf6a12be8d9b73f45c5591f4197c4f6789bc907c0518c421cf7941e3237d",
+      "size": 9134626
+    },
+    "england-efl-league-one/england-efl-league-one_eligible_prediction_candidates.csv": {
+      "sha256": "7cdabbcfabba391761a1f0b55b30fbe95605813f7eb5e851979640981081bc4c",
+      "size": 72891
+    },
+    "england-efl-league-one/england-efl-league-one_explainable_prediction_candidates.csv": {
+      "sha256": "e5b2c6e56a755da83c22f8b400ecc7ab689027d28aa57c3f2660947fbc8f2001",
+      "size": 3398439
+    },
+    "england-efl-league-one/england-efl-league-one_favorite_avoid_defeat_feature_importance.csv": {
+      "sha256": "e72ab148e9b1ba10ee54bf29355a4dca68e63bd2a6141d3b3938c4a183562a10",
+      "size": 20057
+    },
+    "england-efl-league-one/england-efl-league-one_favorite_avoid_defeat_support_model.pkl": {
+      "sha256": "f913295af9c6b7cf5b09b911b84af05688b5c1de37c65025d2c7f82382401a26",
+      "size": 8793042
+    },
+    "england-efl-league-one/england-efl-league-one_favorite_win_feature_importance.csv": {
+      "sha256": "15a2e12fcd9b57fd2f60b6ddd336676ae035769fd3adad7bf72a7a241ddb89ac",
+      "size": 20058
+    },
+    "england-efl-league-one/england-efl-league-one_favorite_win_support_model.pkl": {
+      "sha256": "2ee4f0e81f0062a7072b4d8aa72e9c0d64da27dd55e42047e044f9997bc73442",
+      "size": 9887122
+    },
+    "england-efl-league-one/england-efl-league-one_first_goal_window_feature_importance.csv": {
+      "sha256": "7c0284e419705c71b8b48f76f6deb8044f7f6dda8bf0b1e528a35401ecbc552d",
+      "size": 20056
+    },
+    "england-efl-league-one/england-efl-league-one_first_goal_window_model.pkl": {
+      "sha256": "c2ce696a9821f6ec968007602e021e874c5085c9221689a75bd055855971631e",
+      "size": 13654026
+    },
+    "england-efl-league-one/england-efl-league-one_market_threshold_sweep.csv": {
+      "sha256": "ea615f9c7eca9cceaf274fd7473baff2477da875ec6f503dd1e3e75a3f925c83",
+      "size": 2694
+    },
+    "england-efl-league-one/england-efl-league-one_metrics.csv": {
+      "sha256": "252954e454e787cd403fdbf92cdd940d2458479416b9d55985417994866cfb77",
+      "size": 1416
+    },
+    "england-efl-league-one/england-efl-league-one_outcome_calibrated_model.pkl": {
+      "sha256": "a24ea1c124ce9387d541682de2d01b5544242185a462b11f2cda6344c93311c9",
+      "size": 11468922
+    },
+    "england-efl-league-one/england-efl-league-one_outcome_feature_importance.csv": {
+      "sha256": "630701a9b7162adcf00b7d50667fa630f40dc1b40277e9f2e7aed121edb0148a",
+      "size": 20052
+    },
+    "england-efl-league-one/england-efl-league-one_over15_base_prod_model.pkl": {
+      "sha256": "dc87fff683452327bd24b0c7cc59f31ea8578594d33fc348c161a5ac5146d6df",
+      "size": 9100866
+    },
+    "england-efl-league-one/england-efl-league-one_over15_feature_importance.csv": {
+      "sha256": "fb744275a0eeb82be1fbc388568a06cf3a09a147645fc77244679a1e4671d0a0",
+      "size": 20058
+    },
+    "england-efl-league-one/england-efl-league-one_over25_base_review_model.pkl": {
+      "sha256": "cbcbbeb8745fc50339f1ae7f7dab6b7e44da2e002fe318d9e988ee1b33b5b46a",
+      "size": 10128386
+    },
+    "england-efl-league-one/england-efl-league-one_over25_feature_importance.csv": {
+      "sha256": "6b071bc5ba7a563c09ba7f4bb41b2d0ebe75fc319c4d9979fe4c37d053dd203e",
+      "size": 20083
+    },
+    "england-efl-league-one/england-efl-league-one_under15_risk_feature_importance.csv": {
+      "sha256": "fb744275a0eeb82be1fbc388568a06cf3a09a147645fc77244679a1e4671d0a0",
+      "size": 20058
+    },
+    "england-efl-league-one/england-efl-league-one_under15_risk_model.pkl": {
+      "sha256": "1c4e47ccc9bc2ce203118a57f39368f1a0aadf9e687493cc7249b5651385b08b",
+      "size": 9100866
+    },
+    "england-efl-league-one/england-efl-league-one_under25_risk_feature_importance.csv": {
+      "sha256": "6b071bc5ba7a563c09ba7f4bb41b2d0ebe75fc319c4d9979fe4c37d053dd203e",
+      "size": 20083
+    },
+    "england-efl-league-one/england-efl-league-one_under25_risk_model.pkl": {
+      "sha256": "a3ba7eb74a6fac45908776894c38e9278f1d96046269f3f4af7d980bca5e1014",
+      "size": 10128386
+    },
+    "england-efl-league-one/england-efl-league-one_winner_decision_window_feature_importance.csv": {
+      "sha256": "996f1899634ec9ca8cf7a75e0e3c06e3b8f893ba531df5d5997da107a7a5c915",
+      "size": 20061
+    },
+    "england-efl-league-one/england-efl-league-one_winner_decision_window_model.pkl": {
+      "sha256": "c74f13b070ea9f7aa00dbbe25b974d96cd050b313e81e51838144ccf66187c4e",
+      "size": 12770082
+    },
+    "england-efl-league-one/explainability_profile.json": {
+      "sha256": "d577b51dcce65b2e14f4da496cc9910cab83369645d59cab95d5a472623bc9da",
+      "size": 1119
+    },
+    "england-efl-league-one/feature_audit.csv": {
+      "sha256": "435a7cc7f23fde1498273b926fe8d5f3ec99f9433859efd64937a76c8df0beb5",
+      "size": 23055
+    },
+    "england-efl-league-one/feature_columns.json": {
+      "sha256": "44ff9590d7b94e617f49b1ebd9ee6d273b8545d5c92b6a3c5d5fef0b02e23465",
+      "size": 13420
+    },
+    "england-efl-league-one/model_config.json": {
+      "sha256": "f7b463b0819cfb088655c79945674029590531c66d9e863613c24c7f225acd6e",
+      "size": 3191
+    },
+    "england-efl-league-one/model_metadata_v064.json": {
+      "sha256": "ef9ca5ebfbcfa73922b7ee7461671fe3a66326908d7a86528c4df22e560f78f7",
+      "size": 942
+    },
+    "england-efl-league-two/england-efl-league-two_btts_base_review_model.pkl": {
+      "sha256": "39a4541f8d548af5e6e5f90b66530e52e7cd876d6f00b842d855ab1504c6f921",
+      "size": 10195106
+    },
+    "england-efl-league-two/england-efl-league-two_btts_feature_importance.csv": {
+      "sha256": "2f83721596973b15e8bedf3410a6877494a9864ff17a82c5efb271903893da49",
+      "size": 20046
+    },
+    "england-efl-league-two/england-efl-league-two_draw_risk_feature_importance.csv": {
+      "sha256": "7a18b3890e7acf88bf68841c579694f123260bf96683f8a8ad735af251490916",
+      "size": 20042
+    },
+    "england-efl-league-two/england-efl-league-two_draw_risk_support_model.pkl": {
+      "sha256": "dc67a95f84d3ea2f15a16e7fba4610af1022d20bf5404c968ce093815b8b9537",
+      "size": 9267906
+    },
+    "england-efl-league-two/england-efl-league-two_eligible_prediction_candidates.csv": {
+      "sha256": "404d7c94952c94f62c68a468a6aefcb260169fb7542de2f62d5998cb1cd4040c",
+      "size": 33388
+    },
+    "england-efl-league-two/england-efl-league-two_explainable_prediction_candidates.csv": {
+      "sha256": "4251689c453092410c3e3d01fcec38a28bc71bc4b7586b86a083ef11399545b9",
+      "size": 3395074
+    },
+    "england-efl-league-two/england-efl-league-two_favorite_avoid_defeat_feature_importance.csv": {
+      "sha256": "a07f80c866a06d568ff3607129ee0a16639c485ec6bce7de55fc981572282af3",
+      "size": 20068
+    },
+    "england-efl-league-two/england-efl-league-two_favorite_avoid_defeat_support_model.pkl": {
+      "sha256": "ec7c104ec037fa93c829a1d8cc9e3858f76ad4791a8fecf6f2c2cfe1ba84955a",
+      "size": 9172882
+    },
+    "england-efl-league-two/england-efl-league-two_favorite_win_feature_importance.csv": {
+      "sha256": "92bba214ab76ddef9b6b9237fdc009196510cc56f101ab4edfe72201cc9ef91e",
+      "size": 20081
+    },
+    "england-efl-league-two/england-efl-league-two_favorite_win_support_model.pkl": {
+      "sha256": "5f8f626897e7bf96845db573793b2bd5a7c98ee2e0b029fbc7171520bfcacf8f",
+      "size": 9940882
+    },
+    "england-efl-league-two/england-efl-league-two_first_goal_window_feature_importance.csv": {
+      "sha256": "edadab1a6a95d46dfdd5aacd9b371c4063134be17cba6faa8172047ac496b4fc",
+      "size": 20047
+    },
+    "england-efl-league-two/england-efl-league-two_first_goal_window_model.pkl": {
+      "sha256": "f0354e1bbefe7cbe42f4a03d741cd8d743957c87da482da3a1e7d03b255c0478",
+      "size": 13749082
+    },
+    "england-efl-league-two/england-efl-league-two_market_threshold_sweep.csv": {
+      "sha256": "0df5dae3506edaf700965b7d5b98d6f82ede6ce847d5872d5c863e767998f688",
+      "size": 2705
+    },
+    "england-efl-league-two/england-efl-league-two_metrics.csv": {
+      "sha256": "655482ce4eea1d66ed839fdac39ed975c26023424c40a78fe8272cbc4ffb7e14",
+      "size": 1413
+    },
+    "england-efl-league-two/england-efl-league-two_outcome_calibrated_model.pkl": {
+      "sha256": "58542881da23718b95f6a4513b8ab53fa3671820a7379642385ff3c2e5eed31b",
+      "size": 11657242
+    },
+    "england-efl-league-two/england-efl-league-two_outcome_feature_importance.csv": {
+      "sha256": "3a43da24f319e87fd13959331fc7c2f8b6adaf119c8504a5b7491ee0b5cf0f12",
+      "size": 20061
+    },
+    "england-efl-league-two/england-efl-league-two_over15_base_prod_model.pkl": {
+      "sha256": "45c8246cb3fcbd84db5a84aaab3006861de43af73203318976a80de1e7b80278",
+      "size": 9380866
+    },
+    "england-efl-league-two/england-efl-league-two_over15_feature_importance.csv": {
+      "sha256": "eb17fed10a64df15cab4eb0220177743bcc736e9df6a0cc2dd0d432608c8d2e3",
+      "size": 20054
+    },
+    "england-efl-league-two/england-efl-league-two_over25_base_review_model.pkl": {
+      "sha256": "df00e861e25524d897fabbad6449da71c3e5ec49f1b83de36ba2f7e068a266d9",
+      "size": 10224386
+    },
+    "england-efl-league-two/england-efl-league-two_over25_feature_importance.csv": {
+      "sha256": "e6831e1af2b211fafcb817982bc5848f7982e6d9a9300c7334dda6ab1c184f51",
+      "size": 20042
+    },
+    "england-efl-league-two/england-efl-league-two_under15_risk_feature_importance.csv": {
+      "sha256": "eb17fed10a64df15cab4eb0220177743bcc736e9df6a0cc2dd0d432608c8d2e3",
+      "size": 20054
+    },
+    "england-efl-league-two/england-efl-league-two_under15_risk_model.pkl": {
+      "sha256": "44ccaeac7d061aaf66fd4086662eb4199bed5cf4f9a4acad5c0574e8aa815aa9",
+      "size": 9380866
+    },
+    "england-efl-league-two/england-efl-league-two_under25_risk_feature_importance.csv": {
+      "sha256": "e6831e1af2b211fafcb817982bc5848f7982e6d9a9300c7334dda6ab1c184f51",
+      "size": 20042
+    },
+    "england-efl-league-two/england-efl-league-two_under25_risk_model.pkl": {
+      "sha256": "6d598d2da67b417672401d8ca160caafbb7d37f0c42ded13352e5fb810b7e48f",
+      "size": 10224386
+    },
+    "england-efl-league-two/england-efl-league-two_winner_decision_window_feature_importance.csv": {
+      "sha256": "8fece178071722cc8f06af1761e29e75f45e12542d87c4858ed4a6dad38fe8c5",
+      "size": 20055
+    },
+    "england-efl-league-two/england-efl-league-two_winner_decision_window_model.pkl": {
+      "sha256": "b47a8a44ef21381a4a94d6bbc3b2af99850dac4084dd174665a7dbe8d1eb0f40",
+      "size": 12871074
+    },
+    "england-efl-league-two/explainability_profile.json": {
+      "sha256": "b1b59944be80d5522517b8a835c5b0560fc34d459e4fa56a0cb6ea5124cfbb3c",
+      "size": 1119
+    },
+    "england-efl-league-two/feature_audit.csv": {
+      "sha256": "435a7cc7f23fde1498273b926fe8d5f3ec99f9433859efd64937a76c8df0beb5",
+      "size": 23055
+    },
+    "england-efl-league-two/feature_columns.json": {
+      "sha256": "44ff9590d7b94e617f49b1ebd9ee6d273b8545d5c92b6a3c5d5fef0b02e23465",
+      "size": 13420
+    },
+    "england-efl-league-two/model_config.json": {
+      "sha256": "95e29cf57424ce2026fc4bd5c9879c6b424ac48690ddc1c33d894fe5de49b559",
+      "size": 3191
+    },
+    "england-efl-league-two/model_metadata_v064.json": {
+      "sha256": "ab2a6f85d5a43376be8bc408581fff824f25f2f184e61bd69dc105c92c2e63c9",
+      "size": 942
+    },
+    "england-national-league-north/england-national-league-north_btts_base_review_model.pkl": {
+      "sha256": "99e13dce74c7c402c8843edd4d09d58dd2d2ac3583d99def33d48eb0a28ca0e8",
+      "size": 7213026
+    },
+    "england-national-league-north/england-national-league-north_btts_feature_importance.csv": {
+      "sha256": "d1a90cbb802c0a9678b1bb8a67503934a311ae4ddbb60f0da9c29c9373c124ee",
+      "size": 20074
+    },
+    "england-national-league-north/england-national-league-north_draw_risk_feature_importance.csv": {
+      "sha256": "168e94b73d70c5e1c42e81220813e2c1d3b9f0b636266917a9410ecc397e2f81",
+      "size": 20064
+    },
+    "england-national-league-north/england-national-league-north_draw_risk_support_model.pkl": {
+      "sha256": "ae4c822583cae36c59ea691a6464a63c0bfede75f9ba780c2822fcccf5e1a53f",
+      "size": 6399906
+    },
+    "england-national-league-north/england-national-league-north_eligible_prediction_candidates.csv": {
+      "sha256": "d97237e70780647ccd738963def90cc23c242fe2fb025e7a9e304bbeadd49b4f",
+      "size": 6481
+    },
+    "england-national-league-north/england-national-league-north_explainable_prediction_candidates.csv": {
+      "sha256": "9e5622ad51d2272d1b4cce9fd757381b1c62e49876f4dbd399f9ed7536c1a25c",
+      "size": 3239992
+    },
+    "england-national-league-north/england-national-league-north_favorite_avoid_defeat_feature_importance.csv": {
+      "sha256": "37d172771ccfa37a6397c5b16f7eec43b98bb27b0abe4b8553b155861f393801",
+      "size": 20057
+    },
+    "england-national-league-north/england-national-league-north_favorite_avoid_defeat_support_model.pkl": {
+      "sha256": "c818d1be088a2215dad2d9c4b9254b0b197e7f7d32383c287da207544d50540f",
+      "size": 3551122
+    },
+    "england-national-league-north/england-national-league-north_favorite_win_feature_importance.csv": {
+      "sha256": "dc9fae5400e93c7fb0b266f729ca7e69680cc598e394bd0083c9e7eab640d50b",
+      "size": 20077
+    },
+    "england-national-league-north/england-national-league-north_favorite_win_support_model.pkl": {
+      "sha256": "2c60ac285d5083716aa8301399ba807671d56cbc5ee94d3f64a59685a5931179",
+      "size": 3852722
+    },
+    "england-national-league-north/england-national-league-north_first_goal_window_feature_importance.csv": {
+      "sha256": "ab856fede210f4cee611dc5c50c76077d018b1918eaf4c3d016a7c3f0be96422",
+      "size": 20063
+    },
+    "england-national-league-north/england-national-league-north_first_goal_window_model.pkl": {
+      "sha256": "b51abe114b950998959948e8a43c000e56037dea07fb62170ac0a4992157b2c4",
+      "size": 9670202
+    },
+    "england-national-league-north/england-national-league-north_market_threshold_sweep.csv": {
+      "sha256": "0f7f9ef8ef7258aad095f4d83c1880d51b6216ac22b4e2ad9dc31efa6482c6fa",
+      "size": 3097
+    },
+    "england-national-league-north/england-national-league-north_metrics.csv": {
+      "sha256": "d037e9d30e7b5409fac0bc0f892a145037b5b92c3af73870836759eb963833d2",
+      "size": 1487
+    },
+    "england-national-league-north/england-national-league-north_outcome_calibrated_model.pkl": {
+      "sha256": "0250aa56f2b2f77bcb32191a0ca879ae05b1a39d70c2986812c7547e67bff5f5",
+      "size": 8129146
+    },
+    "england-national-league-north/england-national-league-north_outcome_feature_importance.csv": {
+      "sha256": "2a618f3d62050d201a93f350d4dee5a34c80c985d524dd3457bb15a5e70ecc04",
+      "size": 20054
+    },
+    "england-national-league-north/england-national-league-north_over15_base_prod_model.pkl": {
+      "sha256": "31238f829b2efcc398e92c6b8bd69eab5d5d4ba75fd3f624be76be16bf59395e",
+      "size": 6358786
+    },
+    "england-national-league-north/england-national-league-north_over15_feature_importance.csv": {
+      "sha256": "4e5d59a8f319143eb11540513766fbd288675c2d2bbbbe2c18644a5982e91ec5",
+      "size": 20053
+    },
+    "england-national-league-north/england-national-league-north_over25_base_review_model.pkl": {
+      "sha256": "1217daef74437a90b057ff2a710d62ac9cc026fca382780e39d112666ba28ede",
+      "size": 7176706
+    },
+    "england-national-league-north/england-national-league-north_over25_feature_importance.csv": {
+      "sha256": "95d77cbbb4ff9f9906ba48b1335f597430d9dc460d81d8b4b79649f4f06a122d",
+      "size": 20069
+    },
+    "england-national-league-north/england-national-league-north_under15_risk_feature_importance.csv": {
+      "sha256": "4e5d59a8f319143eb11540513766fbd288675c2d2bbbbe2c18644a5982e91ec5",
+      "size": 20053
+    },
+    "england-national-league-north/england-national-league-north_under15_risk_model.pkl": {
+      "sha256": "5365d5d00e7bfd83d48d9db396a35149c7a7748302b7b8aaddeaf0b6f39f7f1d",
+      "size": 6358786
+    },
+    "england-national-league-north/england-national-league-north_under25_risk_feature_importance.csv": {
+      "sha256": "95d77cbbb4ff9f9906ba48b1335f597430d9dc460d81d8b4b79649f4f06a122d",
+      "size": 20069
+    },
+    "england-national-league-north/england-national-league-north_under25_risk_model.pkl": {
+      "sha256": "ff5e39cb0aa391875a5a16f251ae1b119a27f4effc8436716655758f76e25122",
+      "size": 7176706
+    },
+    "england-national-league-north/england-national-league-north_winner_decision_window_feature_importance.csv": {
+      "sha256": "953f17bd2882efbe980cbaaf182a86cae6df5742fc4010a7c14f5bfa6869d48f",
+      "size": 20073
+    },
+    "england-national-league-north/england-national-league-north_winner_decision_window_model.pkl": {
+      "sha256": "55131f4999223a5491b818a0468d8b6af0d8940e1c95f8517b82cf20ea2d072a",
+      "size": 9758234
+    },
+    "england-national-league-north/explainability_profile.json": {
+      "sha256": "0352541985a6e2060e64442aaf57ce3ef71aae5442e3de03f21ba06d57813a8b",
+      "size": 1126
+    },
+    "england-national-league-north/feature_audit.csv": {
+      "sha256": "435a7cc7f23fde1498273b926fe8d5f3ec99f9433859efd64937a76c8df0beb5",
+      "size": 23055
+    },
+    "england-national-league-north/feature_columns.json": {
+      "sha256": "44ff9590d7b94e617f49b1ebd9ee6d273b8545d5c92b6a3c5d5fef0b02e23465",
+      "size": 13420
+    },
+    "england-national-league-north/model_config.json": {
+      "sha256": "9d80218ee7490a7420cbed97b615302b0b7fbcbbf13be1ed8847bc356580c6b4",
+      "size": 3289
+    },
+    "england-national-league-north/model_metadata_v064.json": {
+      "sha256": "64e256ab5b7f7fb81e887dcb4021938480bf3d927230d24763cc6d35f2bae8bd",
+      "size": 977
+    },
+    "england-national-league-south/england-national-league-south_btts_base_review_model.pkl": {
+      "sha256": "76d0077170b58c88a1727343aa5e5296233c3978f3d8d524c9e623909c68c006",
+      "size": 7099266
+    },
+    "england-national-league-south/england-national-league-south_btts_feature_importance.csv": {
+      "sha256": "c8dd378018d31c2bfe60aef236d92e6e3cc742a8391adcf8f7fa80cc279b5697",
+      "size": 20059
+    },
+    "england-national-league-south/england-national-league-south_draw_risk_feature_importance.csv": {
+      "sha256": "cb405d07c022a2a42b36e8dc9c64721fcf4e6e80d1d049aeead4e3085d8074bf",
+      "size": 20077
+    },
+    "england-national-league-south/england-national-league-south_draw_risk_support_model.pkl": {
+      "sha256": "c221d4d3341351ff897702f132ee9b365b260d0d26e01d4cfcacd13a2a075e74",
+      "size": 6369026
+    },
+    "england-national-league-south/england-national-league-south_eligible_prediction_candidates.csv": {
+      "sha256": "b2de306bb2e8b837985d52b910f50fca6e41e9b70371ce090746f4c607ad620e",
+      "size": 6489
+    },
+    "england-national-league-south/england-national-league-south_explainable_prediction_candidates.csv": {
+      "sha256": "ca808fef33b14285ba62c6393303f846e767bc38d8658858977daa947454312f",
+      "size": 3246883
+    },
+    "england-national-league-south/england-national-league-south_favorite_avoid_defeat_feature_importance.csv": {
+      "sha256": "54dbdd127b68f2928c196f56715573382d1f4b2afc96a579ddde6af7ec9f3ecc",
+      "size": 20071
+    },
+    "england-national-league-south/england-national-league-south_favorite_avoid_defeat_support_model.pkl": {
+      "sha256": "2f7af12f39198b11fc2b9120e4714aeb6740b89e841c1d867598bf7c25f0316e",
+      "size": 3586482
+    },
+    "england-national-league-south/england-national-league-south_favorite_win_feature_importance.csv": {
+      "sha256": "f2e53359ad47eb260b941827a3a43764bc48b44dae60c6239c9755e345655e97",
+      "size": 20060
+    },
+    "england-national-league-south/england-national-league-south_favorite_win_support_model.pkl": {
+      "sha256": "dc2a7e0758739c242cee7738bce3bfa6eb70b39ee7f2de3f22160dadda52163e",
+      "size": 3756402
+    },
+    "england-national-league-south/england-national-league-south_first_goal_window_feature_importance.csv": {
+      "sha256": "48f77d389bcabb4ebaf5e941142b11b758655e1639afb960e776216f63106098",
+      "size": 20070
+    },
+    "england-national-league-south/england-national-league-south_first_goal_window_model.pkl": {
+      "sha256": "591ed7a3d771db5d9adba99d5c8e3020868947862b0370e3eafc51a48a4fa012",
+      "size": 9573482
+    },
+    "england-national-league-south/england-national-league-south_market_threshold_sweep.csv": {
+      "sha256": "0f760fc34594e76f1a1798b62efce43a9f72c0c23c257297dea7592599fa11b0",
+      "size": 3085
+    },
+    "england-national-league-south/england-national-league-south_metrics.csv": {
+      "sha256": "ee2203aec10d593229d8dd795434ae1291de467793cbbfb68b34df2f2d7f7e31",
+      "size": 1515
+    },
+    "england-national-league-south/england-national-league-south_outcome_calibrated_model.pkl": {
+      "sha256": "ce2efe4dc6baac1ff65d3d86162bf8c4b4b21e84f58e77802b06a9be3d080e43",
+      "size": 8056106
+    },
+    "england-national-league-south/england-national-league-south_outcome_feature_importance.csv": {
+      "sha256": "cf2e13b346800d3d0f5530eb4925a813b83e390d79397af8a63a13d403c9cbdc",
+      "size": 20057
+    },
+    "england-national-league-south/england-national-league-south_over15_base_prod_model.pkl": {
+      "sha256": "e028c1993fe30884855d2ec5925ae47cd6b6adb2bfb0d7b22bf27a3b0889587c",
+      "size": 5914306
+    },
+    "england-national-league-south/england-national-league-south_over15_feature_importance.csv": {
+      "sha256": "3dc2a2c218ab567278ac0a84f040d1c22797e6945ffbbd5f40ef161f0ba277ef",
+      "size": 20064
+    },
+    "england-national-league-south/england-national-league-south_over25_base_review_model.pkl": {
+      "sha256": "326498417f61b70c5b38d3aa217625a2c8359ec6e98ad6604953a3b7ba1b84d6",
+      "size": 7138466
+    },
+    "england-national-league-south/england-national-league-south_over25_feature_importance.csv": {
+      "sha256": "682a229f854f6f9675e8d5a7227a0a023a2671a57ea1745e86871db56f563afe",
+      "size": 20044
+    },
+    "england-national-league-south/england-national-league-south_under15_risk_feature_importance.csv": {
+      "sha256": "3dc2a2c218ab567278ac0a84f040d1c22797e6945ffbbd5f40ef161f0ba277ef",
+      "size": 20064
+    },
+    "england-national-league-south/england-national-league-south_under15_risk_model.pkl": {
+      "sha256": "410e31584ab265590698b26c7ce45d45d004007c6f68718b873bfd32f29b84e6",
+      "size": 5914306
+    },
+    "england-national-league-south/england-national-league-south_under25_risk_feature_importance.csv": {
+      "sha256": "682a229f854f6f9675e8d5a7227a0a023a2671a57ea1745e86871db56f563afe",
+      "size": 20044
+    },
+    "england-national-league-south/england-national-league-south_under25_risk_model.pkl": {
+      "sha256": "9e20f52f1ac4c7227921b040dc1bbc788b0347c8868ffe051da4e76688f8791a",
+      "size": 7138466
+    },
+    "england-national-league-south/england-national-league-south_winner_decision_window_feature_importance.csv": {
+      "sha256": "1266ff3f7cc5f058695e6234056eea627bc07a739e078d639f9d1d3c736672d4",
+      "size": 20043
+    },
+    "england-national-league-south/england-national-league-south_winner_decision_window_model.pkl": {
+      "sha256": "5ca496ff1dd21422b14574dddc789b2f26ea23afe883955d1ac6cdfcf7c3c2fa",
+      "size": 9679610
+    },
+    "england-national-league-south/explainability_profile.json": {
+      "sha256": "fda7393f06793764cac0b22bbbb312c07783c1edeac79bcf24cbd1789f0063f4",
+      "size": 1126
+    },
+    "england-national-league-south/feature_audit.csv": {
+      "sha256": "435a7cc7f23fde1498273b926fe8d5f3ec99f9433859efd64937a76c8df0beb5",
+      "size": 23055
+    },
+    "england-national-league-south/feature_columns.json": {
+      "sha256": "44ff9590d7b94e617f49b1ebd9ee6d273b8545d5c92b6a3c5d5fef0b02e23465",
+      "size": 13420
+    },
+    "england-national-league-south/model_config.json": {
+      "sha256": "e91cc815820c8f81796e99e336f0d8360c4502e9b0996e894ccc4bf4626757d2",
+      "size": 3289
+    },
+    "england-national-league-south/model_metadata_v064.json": {
+      "sha256": "64cebcd18e931c0cfaa8144b547d8080c927b4feeadee6653fb75b48ac86f104",
+      "size": 977
+    },
+    "england-national-league/england-national-league_btts_base_review_model.pkl": {
+      "sha256": "d83fb843bc16e960cfda09c0c2db2c6c4eb6cd31795775b4ce0cfbfc00c75771",
+      "size": 8849506
+    },
+    "england-national-league/england-national-league_btts_feature_importance.csv": {
+      "sha256": "a25f63862dc39980d3d921393cc0e4bdc2f5db201950acd742d45babe7dbe9a0",
+      "size": 20058
+    },
+    "england-national-league/england-national-league_draw_risk_feature_importance.csv": {
+      "sha256": "9ae59620db22e337009d3ee75f58e20400ba11cd5c9b390a0c2a4427832fab0a",
+      "size": 20050
+    },
+    "england-national-league/england-national-league_draw_risk_support_model.pkl": {
+      "sha256": "a50ebe108196eb8a6555f356a20e656ba10c1c1e6a0902293cd20adcaafc60ab",
+      "size": 7812546
+    },
+    "england-national-league/england-national-league_eligible_prediction_candidates.csv": {
+      "sha256": "c6907c9700cf5959c950fedd9e3a1b0cd54c602cdc148792e3ed2b674d4d0171",
+      "size": 125938
+    },
+    "england-national-league/england-national-league_explainable_prediction_candidates.csv": {
+      "sha256": "8e9d35fc541f2a80b3076ba4e67d3da8eda716b8d1d77fe9dfb5570d8a277b73",
+      "size": 3452754
+    },
+    "england-national-league/england-national-league_favorite_avoid_defeat_feature_importance.csv": {
+      "sha256": "3983a38d4d9eb72695ebd5c96a13501b260359b4ad79379a631d95ab00268dca",
+      "size": 20081
+    },
+    "england-national-league/england-national-league_favorite_avoid_defeat_support_model.pkl": {
+      "sha256": "35684145bc48187340ad1fc5f2f136c7ae82a0074afd34b84dae8f640ea74a83",
+      "size": 7458322
+    },
+    "england-national-league/england-national-league_favorite_win_feature_importance.csv": {
+      "sha256": "4b4c48cf829f6ef6a3c85669292bae8d2cbfdb95ee7e494fcdeef983021f3846",
+      "size": 20064
+    },
+    "england-national-league/england-national-league_favorite_win_support_model.pkl": {
+      "sha256": "e247cbfabc17723a87bd807f44a4eb36e3c13686a3e11fe1b6d4171b5a6c5757",
+      "size": 8157842
+    },
+    "england-national-league/england-national-league_first_goal_window_feature_importance.csv": {
+      "sha256": "66a71cf334a5a9d40f1c944f27cd0d526e492110c725920346a8491f3cfbf71f",
+      "size": 20040
+    },
+    "england-national-league/england-national-league_first_goal_window_model.pkl": {
+      "sha256": "49c4b1975f2650169e41be4767336b4ab6768528cd2f0b280574f567a3a322f4",
+      "size": 11830074
+    },
+    "england-national-league/england-national-league_market_threshold_sweep.csv": {
+      "sha256": "8eb987dfd7490e6ebe6fbdb54efbffce89621e93c185a17a4b95aba3df280ead",
+      "size": 2886
+    },
+    "england-national-league/england-national-league_metrics.csv": {
+      "sha256": "3eda725593f5ef4bbda571c38db05e985eaaa83ed96c3b5609970c845697cab4",
+      "size": 1421
+    },
+    "england-national-league/england-national-league_outcome_calibrated_model.pkl": {
+      "sha256": "5b1f47127e11889475cb6f81b69be5adfabae8d7905be38929068b5d1e5f0195",
+      "size": 9959194
+    },
+    "england-national-league/england-national-league_outcome_feature_importance.csv": {
+      "sha256": "2280de884f2dcc62a10c30cca7218cb2ae4bd7c666d34d7962c0805f154ae395",
+      "size": 20072
+    },
+    "england-national-league/england-national-league_over15_base_prod_model.pkl": {
+      "sha256": "d0b14f69e53ec096833ffa41861c3099e6529311263cc0bd50110e953cf34797",
+      "size": 7914146
+    },
+    "england-national-league/england-national-league_over15_feature_importance.csv": {
+      "sha256": "90c0d806f948fa756a8e2ac68cc123075d4d9eaf197f25a3fd3c0ecebfea65d0",
+      "size": 20056
+    },
+    "england-national-league/england-national-league_over25_base_review_model.pkl": {
+      "sha256": "6701d01aa26af9f826ffff7c51837d34742632990c00695fd02b514cb6d60051",
+      "size": 8802146
+    },
+    "england-national-league/england-national-league_over25_feature_importance.csv": {
+      "sha256": "7413eb3fff49ecb4212d250be37ed32bf356091836fe7a3f8a8804caa16154c2",
+      "size": 20062
+    },
+    "england-national-league/england-national-league_under15_risk_feature_importance.csv": {
+      "sha256": "90c0d806f948fa756a8e2ac68cc123075d4d9eaf197f25a3fd3c0ecebfea65d0",
+      "size": 20056
+    },
+    "england-national-league/england-national-league_under15_risk_model.pkl": {
+      "sha256": "095c87c2dc7ec52b9dd84c27603fe9bd7f0d31176c4120a76f8075f23d1f3c9f",
+      "size": 7914146
+    },
+    "england-national-league/england-national-league_under25_risk_feature_importance.csv": {
+      "sha256": "7413eb3fff49ecb4212d250be37ed32bf356091836fe7a3f8a8804caa16154c2",
+      "size": 20062
+    },
+    "england-national-league/england-national-league_under25_risk_model.pkl": {
+      "sha256": "b8a8cb622d2ee71e5df4f08d5d98236525350adbf0f53c9c25d2bdcd6d36950d",
+      "size": 8802146
+    },
+    "england-national-league/england-national-league_winner_decision_window_feature_importance.csv": {
+      "sha256": "6fe2f96a38ef8e94527a832e2d2c9c2a122e2dfe1a219ddddaa4dc50c66b3b5f",
+      "size": 20067
+    },
+    "england-national-league/england-national-league_winner_decision_window_model.pkl": {
+      "sha256": "14c371007ef6fac11a9da4b7a83866aedc496cd92c375d24504cd093d34a3c2e",
+      "size": 11066274
+    },
+    "england-national-league/explainability_profile.json": {
+      "sha256": "1ee535885b2aab35cc52e66ab325dfbe647120d0f92624f53339f77e725e30c2",
+      "size": 1120
+    },
+    "england-national-league/feature_audit.csv": {
+      "sha256": "435a7cc7f23fde1498273b926fe8d5f3ec99f9433859efd64937a76c8df0beb5",
+      "size": 23055
+    },
+    "england-national-league/feature_columns.json": {
+      "sha256": "44ff9590d7b94e617f49b1ebd9ee6d273b8545d5c92b6a3c5d5fef0b02e23465",
+      "size": 13420
+    },
+    "england-national-league/model_config.json": {
+      "sha256": "96ba46a489d198e461586e0fad3798a69d1ae9df83ef8e6453419e708b1a5f47",
+      "size": 3205
+    },
+    "england-national-league/model_metadata_v064.json": {
+      "sha256": "f55d734b9bdc0a6be4967dae10c93496aff7ef5f8db679b8a76d433e1c6b58ff",
+      "size": 935
+    }
+  },
+  "folders": [
+    "england-championship",
+    "england-efl-league-one",
+    "england-efl-league-two",
+    "england-national-league",
+    "england-national-league-north",
+    "england-national-league-south"
+  ],
+  "format": 1,
+  "registry_sha256": "29e927d83701924ab8da272227f28f50722d6f4b12669fa6fc08c8ff116bbdfb"
+}

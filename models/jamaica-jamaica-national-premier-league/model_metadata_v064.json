@@ -1,0 +1,34 @@
+{
+  "league_slug": "jamaica-jamaica-national-premier-league",
+  "league_name": "Jamaica National Premier League",
+  "model_version": "jamaica-jamaica-national-premier-league-v0.6.4-offline-candidate",
+  "rows_total": 1392,
+  "train_rows": 829,
+  "validation_rows": 283,
+  "test_rows": 280,
+  "seasons": [
+    2018,
+    2019,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "odds_available_rate": 0.834051724137931,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "competition_type": "main_league",
+  "model_family": "league_v064",
+  "deployment_status": "pending_validation",
+  "sklearn_training_version": "1.8.0",
+  "candidate_only": true,
+  "trained_at_utc": "2026-11-10T08:49:31.143130+00:00"
+}

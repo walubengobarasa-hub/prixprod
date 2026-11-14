@@ -171,6 +171,7 @@ def sync_git_models(
     disk_root: Path | str | None = None,
     *,
     dry_run: bool = False,
+    source_models_override: Path | str | None = None,
 ) -> dict[str, Any]:
     """Apply Git-declared league additions while preserving persistent models.
 
@@ -195,7 +196,7 @@ def sync_git_models(
     if disk_root == (repo_root / "models").resolve() and _flag("PRIX_REQUIRE_PERSISTENT_MODEL_ROOT", True):
         raise RuntimeError("Model root fell back to ephemeral ./models. Check MODEL_ROOT and Render disk mount")
 
-    source_models = source / "models"
+    source_models = Path(source_models_override).resolve() if source_models_override is not None else source / "models"
     delta = _load_registry(source_registry_path)["leagues"]
     if not delta:
         raise ValueError("deploy_models/leagues.json has no league entries")

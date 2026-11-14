@@ -1,0 +1,61 @@
+name: Validate and publish Prix models
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: prix-model-release-main
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current Git commit
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+          fetch-depth: 2
+      - name: Validate and publish models when they change
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GIT_BEFORE_SHA: ${{ github.event.before }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -f deploy_models/leagues.json ]; then
+            echo "No deploy_models/leagues.json yet. Code-only deployment."
+            exit 0
+          fi
+          needs_publish=0
+          if ! gh release view prix-models-latest >/dev/null 2>&1; then
+            needs_publish=1
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            needs_publish=1
+          else
+            # A push may contain multiple commits. Compare against the pre-push
+            # SHA, not just HEAD^, so a models change in an earlier commit is seen.
+            if [ -z "$GIT_BEFORE_SHA" ] || [ "$GIT_BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+              needs_publish=1
+            else
+              if ! git cat-file -e "$GIT_BEFORE_SHA^{commit}" 2>/dev/null; then
+                git fetch --no-tags --depth=1 origin "$GIT_BEFORE_SHA"
+              fi
+              if git diff --name-only "$GIT_BEFORE_SHA" HEAD | grep -q '^deploy_models/'; then
+                needs_publish=1
+              fi
+            fi
+          fi
+          if [ "$needs_publish" -eq 0 ]; then
+            echo "Model data unchanged; previous GitHub Release remains valid."
+            exit 0
+          fi
+          git lfs pull --include="deploy_models/models/**" --exclude=""
+          python scripts/prepare_github_models.py --check
+          python scripts/build_github_models_release.py "$RUNNER_TEMP/prix-models.zip"
+          if ! gh release view prix-models-latest >/dev/null 2>&1; then
+            gh release create prix-models-latest --target "$GITHUB_SHA" --title "Prix trained model artifacts" --notes "Model artifacts published by GitHub Actions from main." --latest=false
+          fi
+          gh release upload prix-models-latest "$RUNNER_TEMP/prix-models.zip" --clobber
+          echo "Validated model package published before Render deploy"
