@@ -1,4 +1,10 @@
-# Large serialized model files are stored as Git LFS objects, not ordinary Git blobs.
+# Python serialized models stay in Git LFS and are never line-ending converted.
 *.pkl filter=lfs diff=lfs merge=lfs -text
 *.joblib filter=lfs diff=lfs merge=lfs -text
-deploy_models/** -text
+
+# Hash-verified model metadata and output tables use LF on every operating system.
+# Do not apply a global `deploy_models/** -text` override here.
+deploy_models/leagues.json text eol=lf
+deploy_models/model_manifest.json text eol=lf
+deploy_models/models/**/*.json text eol=lf
+deploy_models/models/**/*.csv text eol=lf
