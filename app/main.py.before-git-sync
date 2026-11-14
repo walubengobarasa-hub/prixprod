@@ -1,0 +1,1016 @@
+from __future__ import annotations
+
+import json
+import asyncio
+import logging
+import os
+import re
+import time
+import tempfile
+import zipfile
+from pathlib import Path
+
+from datetime import date as date_type, datetime, timezone
+from typing import Any
+from uuid import uuid4
+from zoneinfo import ZoneInfo
+
+from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+from starlette.concurrency import run_in_threadpool
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+
+from app.config import settings, model_root_path, storage_status
+from app.data_adapter import is_cancelled_status, is_completed_status, normalize_fixture_result, normalize_footystats_match
+from app.feature_builder import build_live_feature_rows_from_footystats
+from app.footystats_client import footystats_client
+from app.league_registry import league_registry
+from app.model_registry import model_registry
+from app.predictor import predict_feature_rows, _market_status
+from app.schemas import (
+    EligiblePredictionRequest,
+    EligiblePredictionResponse,
+    FeaturePredictionRequest,
+    FixtureResultsRequest,
+    FixtureResultsResponse,
+    FeatureRow,
+    LeagueDatePredictionRequest,
+    LeaguePredictionSummary,
+    MockFixturePredictionRequest,
+    PredictionResponse,
+)
+from app.security import require_api_key
+from app.deployment_manager import deploy_release, rollback_release
+from app.model_folder_installer import install_missing_models, MAX_ARCHIVE_BYTES
+from app.candidate_replacement import replace_seven_candidates, rollback_seven_candidates
+from app.storage import cache_path, read_cache, write_cache
+
+IS_PRODUCTION = settings.app_env.lower() in {"production", "prod"}
+app = FastAPI(
+    title=settings.app_name,
+    version="1.0.0",
+    description="PrixPredictor football prediction and candidate eligibility API.",
+    docs_url=None if IS_PRODUCTION else "/docs",
+    redoc_url=None if IS_PRODUCTION else "/redoc",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[] if IS_PRODUCTION else ["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Accept", "Content-Type", "X-API-Key", "X-Request-ID", "X-Idempotency-Key"],
+)
+
+
+# Sync FastAPI endpoints run in a threadpool. An async request gate serializes
+# memory-heavy calls BEFORE they can start competing for model/match memory.
+_heavy_request_lock = asyncio.Lock()
+_memory_logger = logging.getLogger("uvicorn.error")
+_HEAVY_PATHS = (
+    "/predict/", "/results/fixtures", "/sync/league/", "/features/",
+    "/models",  # /models and /models/validate also load multiple model files
+)
+
+
+def _rss_memory_mb() -> float | None:
+    try:
+        # Linux / Render: current process resident memory, not historical peak.
+        pages = int(Path("/proc/self/statm").read_text().split()[1])
+        return round(pages * os.sysconf("SC_PAGE_SIZE") / 1048576, 2)
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+@app.middleware("http")
+async def bound_memory_heavy_requests(request: Request, call_next):
+    if request.method not in {"GET", "POST"} or not any(
+        request.url.path == part or request.url.path.startswith(part)
+        for part in _HEAVY_PATHS
+    ):
+        return await call_next(request)
+    try:
+        await asyncio.wait_for(_heavy_request_lock.acquire(), timeout=settings.heavy_request_wait_seconds)
+    except asyncio.TimeoutError:
+        _memory_logger.warning("heavy_request_busy path=%s rss_mb=%s", request.url.path, _rss_memory_mb())
+        return JSONResponse(
+            status_code=503, headers={"Retry-After": "5"},
+            content={"detail": "Prediction service is processing another request. Retry shortly.", "code": "MODEL_BUSY"},
+        )
+    started = time.monotonic()
+    try:
+        _memory_logger.info("heavy_request_start path=%s rss_mb=%s cached_models=%s",
+                            request.url.path, _rss_memory_mb(), len(model_registry._cache))
+        return await call_next(request)
+    finally:
+        _memory_logger.info("heavy_request_end path=%s seconds=%.2f rss_mb=%s cached_models=%s",
+                            request.url.path, time.monotonic() - started, _rss_memory_mb(), len(model_registry._cache))
+        _heavy_request_lock.release()
+
+
+def _today() -> str:
+    return datetime.now(ZoneInfo(settings.platform_timezone)).date().isoformat()
+
+
+def _parse_date(value: str | None, fallback: str | None = None) -> str:
+    raw = value or fallback or _today()
+    try:
+        return datetime.fromisoformat(str(raw).replace("Z", "+00:00")).date().isoformat()
+    except Exception:
+        return datetime.strptime(str(raw)[:10], "%Y-%m-%d").date().isoformat()
+
+
+def _date_in_range(value: str | None, date_from: str, date_to: str) -> bool:
+    if not value:
+        return False
+    current = str(value)[:10]
+    return date_from <= current <= date_to
+
+
+def _cache_info(name: str) -> dict[str, Any]:
+    path = cache_path(name)
+    if not path.exists():
+        return {"exists": False, "path": str(path), "cached_at": None}
+    try:
+        with path.open("r", encoding="utf-8") as source:
+            prefix = source.read(1024)
+        match = re.search(r'"cached_at"\s*:\s*"([^"\n]+)"', prefix)
+        return {"exists": True, "path": str(path), "cached_at": match.group(1) if match else None}
+    except OSError:
+        return {"exists": True, "path": str(path), "cached_at": None}
+
+
+def _registry_identifier(league_slug: str) -> tuple[dict[str, Any], str]:
+    meta = league_registry.get(league_slug)
+    canonical_slug = str(meta.get("alias_for") or league_slug)
+    if meta.get("alias_for"):
+        meta = league_registry.get(canonical_slug)
+    identifier = meta.get("footystats_season_id") or meta.get("footystats_league_id")
+    if not identifier:
+        raise HTTPException(status_code=400, detail=f"FootyStats season/league ID is not configured for {league_slug}.")
+    return meta, str(identifier)
+
+
+def _cache_names(league_slug: str, identifier: str) -> dict[str, str]:
+    prefix = f"live_{league_slug}_{identifier}_{settings.feature_contract_version.replace('.', '')}"
+    return {
+        "raw": f"{prefix}_raw_league_matches",
+        "normalized": f"{prefix}_normalized_matches",
+        "completed": f"{prefix}_completed",
+        "fixtures": f"{prefix}_fixtures",
+        "features": f"{prefix}_feature_rows",
+    }
+
+
+def _classify_matches(raw_matches: list[dict[str, Any]], date_from: str, date_to: str) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    completed: list[dict[str, Any]] = []
+    fixtures: list[dict[str, Any]] = []
+    now_utc = datetime.now(timezone.utc)
+
+    for raw in raw_matches:
+        normalized = normalize_footystats_match(raw)
+        status = str(normalized.get("status") or "").lower()
+        kickoff = normalized.get("kickoff_time")
+        kickoff_dt: datetime | None = None
+        if kickoff:
+            try:
+                kickoff_dt = datetime.fromisoformat(str(kickoff).replace("Z", "+00:00"))
+                if kickoff_dt.tzinfo is None:
+                    kickoff_dt = kickoff_dt.replace(tzinfo=timezone.utc)
+            except Exception:
+                kickoff_dt = None
+
+        is_completed = is_completed_status(status)
+        is_cancelled = is_cancelled_status(status)
+        # A future row must never enter the historical/completed feature pool,
+        # even if an upstream source supplies an inconsistent status.
+        if is_completed and (kickoff_dt is None or kickoff_dt <= now_utc):
+            completed.append(raw)
+            continue
+        if is_cancelled:
+            continue
+        if kickoff_dt is not None and kickoff_dt <= now_utc:
+            # Never present an already-started unconfirmed row as a pre-match fixture.
+            continue
+        if _date_in_range(normalized.get("match_date"), date_from, date_to):
+            fixtures.append(raw)
+    return completed, fixtures
+
+
+def _sync_league_matches(
+    league_slug: str,
+    date_from: str,
+    date_to: str,
+    force_refresh: bool = False,
+) -> dict[str, Any]:
+    meta, identifier = _registry_identifier(league_slug)
+    raw_matches = footystats_client.league_matches(identifier, force_refresh=force_refresh)
+    completed, fixtures = [], []
+    normalized, normalized_completed, normalized_fixtures = [], [], []
+    now_utc = datetime.now(timezone.utc)
+    for raw in raw_matches:
+        row = normalize_footystats_match(raw)
+        normalized.append(row)
+        status = str(row.get("status") or "").lower()
+        kickoff = row.get("kickoff_time")
+        kickoff_dt = None
+        if kickoff:
+            try:
+                kickoff_dt = datetime.fromisoformat(str(kickoff).replace("Z", "+00:00"))
+                if kickoff_dt.tzinfo is None:
+                    kickoff_dt = kickoff_dt.replace(tzinfo=timezone.utc)
+            except (ValueError, TypeError):
+                pass
+        if is_completed_status(status) and (kickoff_dt is None or kickoff_dt <= now_utc):
+            completed.append(raw)
+            normalized_completed.append(row)
+        elif not is_cancelled_status(status) and (kickoff_dt is None or kickoff_dt > now_utc) and _date_in_range(row.get("match_date"), date_from, date_to):
+            fixtures.append(raw)
+            normalized_fixtures.append(row)
+    latest_data_match_date = max((str(row.get("match_date"))[:10] for row in normalized if row.get("match_date")), default=None)
+    latest_completed_date = max((str(row.get("match_date"))[:10] for row in normalized_completed if row.get("match_date")), default=None)
+    stale_season = False
+    freshness_date = latest_completed_date or latest_data_match_date
+    if freshness_date:
+        try:
+            stale_season = (
+                date_type.fromisoformat(date_to) - date_type.fromisoformat(freshness_date)
+            ).days > settings.maximum_season_staleness_days
+        except Exception:
+            stale_season = False
+    names = _cache_names(league_slug, identifier)
+
+    metadata = {
+        "league_slug": league_slug,
+        "footystats_identifier": identifier,
+        "date_from": date_from,
+        "date_to": date_to,
+        "latest_data_match_date": latest_data_match_date,
+        "latest_completed_date": latest_completed_date,
+        "stale_season": stale_season,
+        "feature_contract_version": settings.feature_contract_version,
+    }
+    write_cache(names["raw"], raw_matches, metadata=metadata)
+    write_cache(names["normalized"], normalized, metadata=metadata)
+    write_cache(names["completed"], normalized_completed, metadata=metadata)
+    write_cache(names["fixtures"], normalized_fixtures, metadata=metadata)
+    normalized_count = len(normalized)
+    sample_fixture = normalized_fixtures[0] if normalized_fixtures else None
+    sample_completed = normalized_completed[-1] if normalized_completed else None
+    # Don't retain full normalized copies during expensive feature construction.
+    del normalized, normalized_completed, normalized_fixtures
+
+    return {
+        "league_slug": league_slug,
+        "league_name": meta.get("display_name") or meta.get("name") or league_slug,
+        "footystats_identifier": identifier,
+        "date_from": date_from,
+        "date_to": date_to,
+        "latest_data_match_date": latest_data_match_date,
+        "latest_completed_date": latest_completed_date,
+        "stale_season": stale_season,
+        "raw_matches": raw_matches,
+        "completed_raw": completed,
+        "fixtures_raw": fixtures,
+        "raw_count": len(raw_matches),
+        "normalized_count": normalized_count,
+        "completed_count": len(completed),
+        "fixture_count": len(fixtures),
+        "cache": {key: _cache_info(value) for key, value in names.items() if key != "features"},
+        "sample_fixture": sample_fixture,
+        "sample_completed": sample_completed,
+    }
+
+
+def _build_league_features(
+    league_slug: str,
+    date_from: str,
+    date_to: str,
+    force_refresh: bool = False,
+) -> tuple[dict[str, Any], list[FeatureRow]]:
+    sync = _sync_league_matches(league_slug, date_from, date_to, force_refresh=force_refresh)
+    loaded = model_registry.get(league_slug)
+    built = build_live_feature_rows_from_footystats(
+        league_slug,
+        sync["fixtures_raw"],
+        sync["completed_raw"],
+        loaded.raw_feature_columns,
+    )
+    rows = [FeatureRow(**row) for row in built]
+    _, identifier = _registry_identifier(league_slug)
+    names = _cache_names(league_slug, identifier)
+    write_cache(
+        names["features"],
+        [row.model_dump() for row in rows],
+        metadata={
+            "league_slug": league_slug,
+            "date_from": date_from,
+            "date_to": date_to,
+            "feature_contract_version": settings.feature_contract_version,
+        },
+    )
+    sync["feature_count"] = len(rows)
+    sync["feature_cache"] = _cache_info(names["features"])
+    return sync, rows
+
+
+def _feature_rows_from_cache(league_slug: str) -> list[FeatureRow]:
+    _, identifier = _registry_identifier(league_slug)
+    rows = read_cache(_cache_names(league_slug, identifier)["features"], max_age_seconds=settings.cache_ttl_seconds) or []
+    return [FeatureRow(**row) for row in rows if isinstance(row, dict)]
+
+
+def _unix_from_date(value: str) -> int:
+    try:
+        dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except Exception:
+        dt = datetime.strptime(str(value)[:10], "%Y-%m-%d")
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return int(dt.timestamp())
+
+
+def _mock_fixture_to_footystats_raw(payload: MockFixturePredictionRequest) -> dict[str, Any]:
+    raw: dict[str, Any] = {
+        "id": payload.match_external_id or f"mock_{payload.home_team}_{payload.away_team}_{payload.match_date}",
+        "status": "incomplete",
+        "date_unix": _unix_from_date(payload.kickoff_time or payload.match_date),
+        "home_name": payload.home_team,
+        "away_name": payload.away_team,
+    }
+    for key in (
+        "odds_ft_1", "odds_ft_x", "odds_ft_2", "odds_ft_over15", "odds_ft_under15",
+        "odds_ft_over25", "odds_ft_under25", "odds_btts_yes", "odds_btts_no",
+        "odds_doublechance_1x", "odds_doublechance_12", "odds_doublechance_x2",
+    ):
+        value = getattr(payload, key, None)
+        if value is not None:
+            raw[key] = value
+    return raw
+
+
+
+@app.post("/admin/models/install-missing", dependencies=[Depends(require_api_key)])
+async def admin_install_missing_models(request: Request) -> dict[str, Any]:
+    """Accept a raw application/zip upload; install only missing model folders.
+
+    Keeps the entire archive and sklearn models out of Python RAM.
+    Does not modify leagues.json or existing model folders.
+    """
+    content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if content_type not in ("application/zip", "application/octet-stream"):
+        raise HTTPException(status_code=415, detail="Send a raw ZIP file with Content-Type: application/zip")
+    length = request.headers.get("content-length")
+    if length and int(length) > MAX_ARCHIVE_BYTES:
+        raise HTTPException(status_code=413, detail="ZIP upload exceeds 60 MiB limit")
+    upload_path = None
+    root = model_root_path()
+    root.mkdir(parents=True, exist_ok=True)
+    try:
+        with tempfile.NamedTemporaryFile(dir=root, prefix=".prix-model-upload-", suffix=".zip", delete=False) as stream:
+            upload_path = Path(stream.name)
+            total = 0
+            async for part in request.stream():
+                total += len(part)
+                if total > MAX_ARCHIVE_BYTES:
+                    raise HTTPException(status_code=413, detail="ZIP upload exceeds 60 MiB limit")
+                stream.write(part)
+        try:
+            return await run_in_threadpool(install_missing_models, upload_path)
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        if upload_path is not None:
+            upload_path.unlink(missing_ok=True)
+
+
+@app.post("/admin/models/replace-seven-1-6-1", dependencies=[Depends(require_api_key)])
+async def admin_replace_seven_candidates(request: Request) -> dict[str, Any]:
+    """Stream the exact audited ZIP and safely replace only seven candidate folders."""
+    content_type = request.headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if content_type not in {"application/zip", "application/octet-stream"}:
+        raise HTTPException(status_code=415, detail="Use Body > binary and Content-Type: application/zip")
+    length = request.headers.get("content-length")
+    if length and int(length) > MAX_ARCHIVE_BYTES:
+        raise HTTPException(status_code=413, detail="ZIP exceeds 60 MiB")
+    root = model_root_path()
+    root.mkdir(parents=True, exist_ok=True)
+    upload_path = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=root, prefix=".prix-seven-upload-", suffix=".zip", delete=False) as file:
+            upload_path = Path(file.name)
+            received = 0
+            async for chunk in request.stream():
+                received += len(chunk)
+                if received > MAX_ARCHIVE_BYTES:
+                    raise HTTPException(status_code=413, detail="ZIP exceeds 60 MiB")
+                file.write(chunk)
+        try:
+            await asyncio.wait_for(_heavy_request_lock.acquire(), timeout=30)
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=503, detail="Prediction generation is busy; retry when the queue is idle")
+        try:
+            result = await run_in_threadpool(replace_seven_candidates, upload_path)
+            model_registry.clear()
+            return result
+        except (ValueError, OSError, zipfile.BadZipFile) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        finally:
+            _heavy_request_lock.release()
+    finally:
+        if upload_path:
+            upload_path.unlink(missing_ok=True)
+
+
+class SevenCandidateRollback(BaseModel):
+    backup_id: str
+
+
+@app.post("/admin/models/rollback-seven-1-6-1", dependencies=[Depends(require_api_key)])
+async def admin_rollback_seven_candidates(payload: SevenCandidateRollback) -> dict[str, Any]:
+    try:
+        await asyncio.wait_for(_heavy_request_lock.acquire(), timeout=30)
+    except asyncio.TimeoutError:
+        raise HTTPException(status_code=503, detail="Prediction generation is busy; retry when the queue is idle")
+    try:
+        try:
+            result = await run_in_threadpool(rollback_seven_candidates, payload.backup_id)
+            model_registry.clear()
+            return result
+        except (ValueError, OSError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+    finally:
+        _heavy_request_lock.release()
+
+
+class AdminRegistryApplyRequest(BaseModel):
+    registry: dict[str, Any]
+
+@app.post("/admin/registry/apply", dependencies=[Depends(require_api_key)])
+def admin_apply_registry(payload: AdminRegistryApplyRequest) -> dict[str, Any]:
+    target = model_root_path()
+    target.mkdir(parents=True, exist_ok=True)
+    if not isinstance(payload.registry.get("leagues"), dict):
+        raise HTTPException(status_code=422, detail="registry.leagues must be an object")
+    registry_path = target / "leagues.json"
+    previous = registry_path.read_bytes() if registry_path.exists() else None
+    tmp = target / "leagues.json.tmp"
+    try:
+        tmp.write_text(json.dumps(payload.registry, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        tmp.replace(registry_path)
+        league_registry.reload(); model_registry.clear()
+        errors = league_registry.validate()
+        if errors:
+            raise ValueError("Registry validation failed: " + json.dumps(errors))
+        return {"ok": True, "registry_errors": [], "enabled_slugs": league_registry.enabled_slugs()}
+    except Exception as exc:
+        if previous is not None:
+            registry_path.write_bytes(previous)
+        elif registry_path.exists():
+            registry_path.unlink()
+        league_registry.reload(); model_registry.clear()
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+class AdminReleaseDeployRequest(BaseModel):
+    release_key: str
+    archive_base64: str
+    registry: dict[str, Any]
+
+class AdminReleaseRollbackRequest(BaseModel):
+    release_key: str
+
+@app.post("/admin/releases/deploy", dependencies=[Depends(require_api_key)])
+def admin_deploy_release(payload: AdminReleaseDeployRequest) -> dict[str, Any]:
+    try:
+        return deploy_release(payload.release_key, payload.archive_base64, payload.registry)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+@app.post("/admin/releases/rollback", dependencies=[Depends(require_api_key)])
+def admin_rollback_release(payload: AdminReleaseRollbackRequest) -> dict[str, Any]:
+    try:
+        return rollback_release(payload.release_key)
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+@app.get("/", include_in_schema=False)
+def root() -> dict[str, Any]:
+    return {
+        **health(),
+        "health_url": "/health",
+        "models_url": "/models",
+        "model_validation_url": "/models/validate",
+        "eligible_predictions_url": "/predict/eligible",
+        "fixture_results_url": "/results/fixtures",
+        "docs_enabled": not IS_PRODUCTION,
+    }
+
+
+
+
+@app.get("/health")
+def health() -> dict[str, Any]:
+    return {
+        "status": "ok",
+        "service": settings.app_name,
+        "environment": settings.app_env,
+        "api_version": "v1",
+        "prediction_contract_version": settings.prediction_contract_version,
+        "feature_contract_version": settings.feature_contract_version,
+        "registered_leagues": len(league_registry.enabled_slugs()),
+        "storage": storage_status(),
+    }
+
+
+@app.get("/models")
+def models() -> dict[str, Any]:
+    leagues: list[dict[str, Any]] = []
+    for slug, original_meta in league_registry.list_leagues().items():
+        meta = dict(original_meta or {})
+        row: dict[str, Any] = {
+            "league_slug": slug,
+            "display_name": meta.get("display_name") or meta.get("name") or slug,
+            "enabled": bool(meta.get("enabled", True)),
+            "alias_for": meta.get("alias_for"),
+            "model_folder": meta.get("model_folder") or meta.get("alias_for") or slug,
+            "footystats_league_id": meta.get("footystats_league_id"),
+            "footystats_season_id": meta.get("footystats_season_id"),
+            "competition_type": meta.get("competition_type", "league"),
+            "competition_format": meta.get("competition_format", "round_robin"),
+            "model_family": meta.get("model_family", "league_v064"),
+            "uses_team_strength": bool(meta.get("uses_team_strength", False)),
+            "uses_league_strength": bool(meta.get("uses_league_strength", False)),
+        }
+        if not meta.get("alias_for"):
+            try:
+                loaded = model_registry.get(slug)
+                row.update({
+                    "model_version": loaded.model_version,
+                    "model_mode": loaded.default_mode,
+                    "feature_count": len(loaded.raw_feature_columns),
+                    "fitted_feature_count": len(loaded.model_feature_columns),
+                    "available_modes": loaded.available_modes(),
+                    "loaded_models": {key: value is not None for key, value in loaded.models.items()},
+                    "active_candidate_markets": [market for market in ("double_chance", "over_1_5", "match_outcome") if _market_status(loaded.config, market) == "active"],
+                    "review_only_markets": [market for market in ("double_chance", "over_1_5", "match_outcome", "btts", "over_2_5") if _market_status(loaded.config, market) == "review_only"],
+                    "market_statuses": {market: _market_status(loaded.config, market) for market in ("double_chance", "over_1_5", "match_outcome", "btts", "over_2_5")},
+                    "explainability_enabled": bool(loaded.config.get("explainability") or loaded.explainability_profile),
+                })
+            except Exception as exc:
+                row["error"] = str(exc)
+        leagues.append(row)
+    return {
+        "api_version": "v1",
+        "prediction_contract_version": settings.prediction_contract_version,
+        "feature_contract_version": settings.feature_contract_version,
+        "registry_errors": league_registry.validate(),
+        "leagues": leagues,
+    }
+
+
+@app.get("/registry/export", dependencies=[Depends(require_api_key)])
+def export_registry_metadata() -> dict[str, Any]:
+    """Export the canonical/alias registry without deserializing model files.
+
+    Laravel's Import API Registry uses this small, authenticated response. It
+    avoids loading every sklearn model via /models on a memory-limited service.
+    """
+    leagues = []
+    for slug, raw in league_registry.list_leagues().items():
+        meta = dict(raw or {})
+        leagues.append({
+            "league_slug": slug,
+            "display_name": meta.get("display_name") or meta.get("name") or slug,
+            "alias_for": meta.get("alias_for"),
+            "model_folder": meta.get("model_folder") or meta.get("alias_for") or slug,
+            "model_version": meta.get("model_version"),
+            "enabled": bool(meta.get("enabled", True)),
+            "footystats_league_id": meta.get("footystats_league_id"),
+            "footystats_season_id": meta.get("footystats_season_id"),
+            "competition_type": meta.get("competition_type", "league"),
+            "competition_format": meta.get("competition_format"),
+            "model_family": meta.get("model_family"),
+            "uses_team_strength": meta.get("uses_team_strength", False),
+            "uses_league_strength": meta.get("uses_league_strength", False),
+        })
+    return {"leagues": leagues, "registry_errors": league_registry.validate()}
+
+
+@app.get("/registry/status", dependencies=[Depends(require_api_key)])
+def registry_status() -> dict[str, Any]:
+    """Cheap registry diagnostics; does not load any sklearn models or call FootyStats."""
+    root = model_root_path()
+    entries = league_registry.list_leagues()
+    canonical = {slug: meta for slug, meta in entries.items()
+                 if not (meta or {}).get("alias_for") and bool((meta or {}).get("enabled", True))}
+    return {
+        "model_root": str(root),
+        "registry_path": str(league_registry.path),
+        "registry_entries": len(entries),
+        "enabled_distinct_leagues": len(canonical),
+        "enabled_aliases": sum(1 for meta in entries.values() if (meta or {}).get("alias_for") and (meta or {}).get("enabled", True)),
+        "missing_model_folders": [slug for slug, meta in canonical.items()
+                                  if not (root / str((meta or {}).get("model_folder") or slug)).is_dir()],
+        "registered_slugs": sorted(canonical),
+        "registry_errors": league_registry.validate(),
+    }
+
+
+
+@app.get("/registry/diagnostics", dependencies=[Depends(require_api_key)])
+def league_registration_diagnostics() -> dict[str, Any]:
+    """Inspect every league's model folder and manifest without loading sklearn objects."""
+    root = model_root_path()
+    results = []
+    for slug, raw in league_registry.list_leagues().items():
+        meta = dict(raw or {})
+        if meta.get("alias_for"):
+            continue
+        folder = root / str(meta.get("model_folder") or slug)
+        manifest = folder / "model_config.json"
+        error = None
+        manifest_data: dict[str, Any] = {}
+        if not folder.is_dir():
+            error = "Model folder missing"
+        elif not manifest.is_file():
+            error = "model_config.json missing"
+        else:
+            try:
+                manifest_data = json.loads(manifest.read_text(encoding="utf-8"))
+            except (ValueError, OSError) as exc:
+                error = f"Unreadable model configuration: {exc.__class__.__name__}"
+        registry_family = str(meta.get("model_family") or "")
+        actual_family = str(manifest_data.get("model_family") or "")
+        if not error and registry_family and actual_family and registry_family != actual_family:
+            if not ({registry_family, actual_family} <= {"league_v064", "main_league"}):
+                error = f"Model family mismatch: registry={registry_family}, artifact={actual_family}"
+        season_id = meta.get("footystats_season_id") or meta.get("footystats_league_id")
+        if not error and not season_id:
+            error = "No configured FootyStats season ID"
+        results.append({
+            "league_slug": slug,
+            "display_name": meta.get("display_name") or meta.get("name") or slug,
+            "enabled": bool(meta.get("enabled", True)),
+            "competition_type": meta.get("competition_type", "league"),
+            "competition_format": meta.get("competition_format", "round_robin"),
+            "uses_team_strength": bool(meta.get("uses_team_strength", False)),
+            "uses_league_strength": bool(meta.get("uses_league_strength", False)),
+            "footystats_league_id": meta.get("footystats_league_id"),
+            "footystats_season_id": season_id,
+            "model_folder": str(meta.get("model_folder") or slug),
+            "season_id": season_id,
+            "registry_model_family": registry_family,
+            "artifact_model_family": actual_family or None,
+            "artifact_model_version": manifest_data.get("model_version"),
+            "model_version": manifest_data.get("model_version") or meta.get("model_version"),
+            "status": "disabled" if not meta.get("enabled", True) else ("error" if error else "registered"),
+            "error": error,
+        })
+    return {"registered_leagues": len(results), "failed": sum(x["status"] == "error" for x in results),
+            "registry_errors": league_registry.validate(), "leagues": results}
+
+@app.post("/registry/reload", dependencies=[Depends(require_api_key)])
+def reload_registry() -> dict[str, Any]:
+    league_registry.reload()
+    model_registry.clear()
+    return {"ok": True, "registered_leagues": len(league_registry.enabled_slugs()), "errors": league_registry.validate()}
+
+
+@app.get("/models/validate", dependencies=[Depends(require_api_key)])
+def validate_models() -> dict[str, Any]:
+    registry_errors = league_registry.validate()
+    model_results = model_registry.validate_all()
+    return {
+        "ok": not registry_errors and all(row.get("ok") for row in model_results),
+        "expected_leagues": len(league_registry.enabled_slugs()),
+        "registry_errors": registry_errors,
+        "models": model_results,
+    }
+
+
+@app.post("/models/{league_slug}/reload", dependencies=[Depends(require_api_key)])
+def reload_model(league_slug: str) -> dict[str, Any]:
+    try:
+        loaded = model_registry.reload(league_slug)
+        return {
+            "league_slug": league_slug,
+            "model_version": loaded.model_version,
+            "model_mode": loaded.default_mode,
+            "feature_count": len(loaded.raw_feature_columns),
+            "available_modes": loaded.available_modes(),
+            "loaded_models": {key: value is not None for key, value in loaded.models.items()},
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/sync/league/{league_slug}", dependencies=[Depends(require_api_key)])
+def sync_league(league_slug: str, payload: LeagueDatePredictionRequest | None = None) -> dict[str, Any]:
+    request = payload or LeagueDatePredictionRequest()
+    target = _parse_date(request.date)
+    try:
+        result = _sync_league_matches(league_slug, target, target, request.force_refresh)
+        return {key: value for key, value in result.items() if key not in {"raw_matches", "completed_raw", "fixtures_raw"}}
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/sync/completed/{league_slug}", dependencies=[Depends(require_api_key)])
+def sync_completed(league_slug: str, payload: LeagueDatePredictionRequest | None = None) -> dict[str, Any]:
+    request = payload or LeagueDatePredictionRequest()
+    target = _parse_date(request.date)
+    try:
+        result = _sync_league_matches(league_slug, target, target, request.force_refresh)
+        return {
+            "league_slug": league_slug,
+            "completed_count": result["completed_count"],
+            "sample_completed": result.get("sample_completed"),
+            "cache": result.get("cache", {}).get("completed"),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/sync/table/{league_slug}", dependencies=[Depends(require_api_key)])
+def sync_table(league_slug: str, payload: LeagueDatePredictionRequest | None = None) -> dict[str, Any]:
+    request = payload or LeagueDatePredictionRequest()
+    try:
+        _, identifier = _registry_identifier(league_slug)
+        max_time = _unix_from_date(request.date) if request.date else None
+        table = footystats_client.league_table(identifier, max_time=max_time, force_refresh=request.force_refresh)
+        return {"league_slug": league_slug, "footystats_identifier": identifier, "table": table}
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/build-features/{league_slug}", dependencies=[Depends(require_api_key)])
+def build_features(league_slug: str, payload: LeagueDatePredictionRequest | None = None) -> dict[str, Any]:
+    request = payload or LeagueDatePredictionRequest()
+    target = _parse_date(request.date)
+    try:
+        sync, rows = _build_league_features(league_slug, target, target, request.force_refresh)
+        coverages = [float((row.feature_meta or {}).get("coverage_ratio", 0) or 0) for row in rows]
+        return {
+            "league_slug": league_slug,
+            "date": target,
+            "fixtures_found": sync["fixture_count"],
+            "feature_rows": len(rows),
+            "average_feature_coverage": round(sum(coverages) / len(coverages), 6) if coverages else 0,
+            "rows": [row.model_dump() for row in rows],
+            "cache": sync.get("feature_cache"),
+        }
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/results/fixtures", response_model=FixtureResultsResponse, dependencies=[Depends(require_api_key)])
+def fixture_results(payload: FixtureResultsRequest) -> FixtureResultsResponse:
+    requested = list(payload.fixtures or [])
+    if not requested:
+        return FixtureResultsResponse(
+            generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+            requested=0,
+            completed=0,
+            pending=0,
+            cancelled=0,
+            not_found=0,
+            results=[],
+        )
+
+    grouped: dict[str, list[Any]] = {}
+    warnings: list[str] = []
+    for reference in requested:
+        grouped.setdefault(reference.league_slug, []).append(reference)
+
+    results: list[dict[str, Any]] = []
+    for requested_slug, references in grouped.items():
+        try:
+            original_meta = league_registry.get(requested_slug)
+            canonical_slug = str(original_meta.get("alias_for") or requested_slug)
+            meta, identifier = _registry_identifier(requested_slug)
+            raw_matches = footystats_client.league_matches(identifier, force_refresh=payload.force_refresh)
+            by_id = {
+                str((row or {}).get("id") or (row or {}).get("match_id") or (row or {}).get("fixture_id") or ""): row
+                for row in raw_matches if isinstance(row, dict)
+            }
+            for reference in references:
+                raw = by_id.get(str(reference.match_external_id))
+                if raw is None:
+                    results.append({
+                        "match_external_id": str(reference.match_external_id),
+                        "league_slug": canonical_slug,
+                        "league_name": meta.get("display_name") or meta.get("name") or canonical_slug,
+                        "status": "not_found",
+                    })
+                    continue
+                normalized = normalize_fixture_result(raw)
+                normalized.update({
+                    "match_external_id": str(reference.match_external_id),
+                    "league_slug": canonical_slug,
+                    "league_name": meta.get("display_name") or meta.get("name") or canonical_slug,
+                })
+                results.append(normalized)
+        except Exception as exc:
+            warnings.append(f"{requested_slug}: {exc}")
+            for reference in references:
+                results.append({
+                    "match_external_id": str(reference.match_external_id),
+                    "league_slug": requested_slug,
+                    "status": "not_found",
+                })
+
+    return FixtureResultsResponse(
+        generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        requested=len(requested),
+        completed=sum(1 for row in results if row.get("status") == "completed"),
+        pending=sum(1 for row in results if row.get("status") in {"pending", "unavailable"}),
+        cancelled=sum(1 for row in results if row.get("status") == "cancelled"),
+        not_found=sum(1 for row in results if row.get("status") == "not_found"),
+        results=results,
+        warnings=warnings,
+    )
+
+
+@app.post("/predict/features", response_model=PredictionResponse, dependencies=[Depends(require_api_key)])
+def predict_features(payload: FeaturePredictionRequest) -> PredictionResponse:
+    try:
+        run_id = str(uuid4())
+        candidates = predict_feature_rows(payload.league_slug, payload.rows, generation_run_id=run_id)
+        loaded = model_registry.get(payload.league_slug)
+        return PredictionResponse(
+            league_slug=payload.league_slug,
+            model_version=loaded.model_version,
+            date=payload.date,
+            candidates=candidates,
+            tickets=[],
+            single_match_insights=[candidate for candidate in candidates if candidate.ticket_eligible],
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/predict/league/{league_slug}", response_model=PredictionResponse, dependencies=[Depends(require_api_key)])
+def predict_league(league_slug: str, payload: LeagueDatePredictionRequest | None = None) -> PredictionResponse:
+    request = payload or LeagueDatePredictionRequest()
+    target = _parse_date(request.date)
+    try:
+        _, rows = _build_league_features(league_slug, target, target, request.force_refresh)
+        run_id = str(uuid4())
+        candidates = predict_feature_rows(league_slug, rows, generation_run_id=run_id)
+        loaded = model_registry.get(league_slug)
+        return PredictionResponse(
+            league_slug=league_slug,
+            model_version=loaded.model_version,
+            date=target,
+            candidates=candidates,
+            tickets=[],
+            single_match_insights=[candidate for candidate in candidates if candidate.ticket_eligible],
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/predict/eligible", response_model=EligiblePredictionResponse, dependencies=[Depends(require_api_key)])
+def predict_eligible(payload: EligiblePredictionRequest) -> EligiblePredictionResponse:
+    date_from = _parse_date(payload.date_from or payload.date)
+    date_to = _parse_date(payload.date_to, date_from)
+    if date_to < date_from:
+        raise HTTPException(status_code=422, detail="date_to must be on or after date_from.")
+
+    requested = payload.leagues or league_registry.enabled_slugs()
+    # Resolve aliases while preserving deterministic order and preventing duplicate model runs.
+    seen: set[str] = set()
+    leagues: list[str] = []
+    for slug in requested:
+        try:
+            meta = league_registry.get(slug)
+            canonical = str(meta.get("alias_for") or slug)
+        except Exception:
+            canonical = slug
+        if canonical not in seen:
+            seen.add(canonical)
+            leagues.append(canonical)
+
+    run_id = str(uuid4())
+    eligible = []
+    reviewed = []
+    summaries: list[LeaguePredictionSummary] = []
+    warnings: list[str] = []
+
+    for league_slug in leagues:
+        try:
+            sync, rows = _build_league_features(
+                league_slug,
+                date_from,
+                date_to,
+                force_refresh=payload.force_refresh,
+            )
+            candidates = predict_feature_rows(league_slug, rows, generation_run_id=run_id)
+            league_eligible = [candidate for candidate in candidates if candidate.ticket_eligible]
+            eligible.extend(league_eligible)
+            if payload.include_ineligible:
+                reviewed.extend([candidate for candidate in candidates if not candidate.ticket_eligible])
+
+            coverage_values = [
+                float(candidate.feature_quality.coverage_ratio)
+                for candidate in candidates
+                if candidate.feature_quality is not None
+            ]
+            if sync.get("stale_season"):
+                status = "stale_season"
+            elif sync["fixture_count"] == 0:
+                status = "no_fixtures"
+            elif not rows:
+                status = "feature_failure"
+            elif not league_eligible:
+                status = "low_volume"
+            else:
+                status = "healthy"
+            league_warnings: list[str] = []
+            if candidates and not league_eligible:
+                league_warnings.append(
+                    "Candidates produced but none met the public eligibility and approval gates; inspect model review-only market settings and confidence thresholds."
+                )
+            if sync.get("stale_season"):
+                league_warnings.append(
+                    f"FootyStats data ends at {sync.get('latest_data_match_date')}; verify the current season ID."
+                )
+            if rows and all(not bool((row.feature_meta or {}).get("passed")) for row in rows):
+                league_warnings.append("All live feature rows failed the feature-quality gate.")
+                status = "feature_failure"
+            _memory_logger.info(
+                "prediction_league_result slug=%s status=%s fixtures=%s features=%s candidates=%s eligible=%s reviewed=%s",
+                league_slug, status, sync["fixture_count"], len(rows), len(candidates),
+                len(league_eligible), len(candidates) - len(league_eligible),
+            )
+            summaries.append(LeaguePredictionSummary(
+                league_slug=league_slug,
+                league_name=sync.get("league_name"),
+                footystats_identifier=sync.get("footystats_identifier"),
+                status=status,
+                latest_data_match_date=sync.get("latest_data_match_date"),
+                latest_completed_date=sync.get("latest_completed_date"),
+                fixtures_found=sync["fixture_count"],
+                feature_rows=len(rows),
+                candidates_generated=len(candidates),
+                eligible_candidates=len(league_eligible),
+                average_feature_coverage=round(sum(coverage_values) / len(coverage_values), 6) if coverage_values else 0,
+                warnings=league_warnings,
+            ))
+        except Exception as exc:
+            _memory_logger.exception("prediction_league_failed slug=%s error_type=%s", league_slug, type(exc).__name__)
+            summaries.append(LeaguePredictionSummary(
+                league_slug=league_slug,
+                status="failed",
+                error=str(exc),
+                warnings=["This league was skipped; other leagues continued processing."],
+            ))
+            warnings.append(f"{league_slug}: {exc}")
+
+    eligible.sort(key=lambda candidate: (candidate.match_date, candidate.kickoff_time or "", -candidate.confidence_score, candidate.league_slug))
+    reviewed.sort(key=lambda candidate: (candidate.match_date, candidate.kickoff_time or "", candidate.league_slug, candidate.market))
+    return EligiblePredictionResponse(
+        generation_run_id=run_id,
+        generated_at=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        date_from=date_from,
+        date_to=date_to,
+        requested_leagues=leagues,
+        eligible_candidates=eligible,
+        reviewed_candidates=reviewed,
+        league_summaries=summaries,
+        warnings=warnings,
+        prediction_contract_version=settings.prediction_contract_version,
+        feature_contract_version=settings.feature_contract_version,
+        candidate_rule_version=settings.candidate_rule_version,
+    )
+
+
+@app.post("/predict/mock-fixture/{league_slug}", response_model=PredictionResponse, dependencies=[Depends(require_api_key)])
+def predict_mock_fixture(league_slug: str, payload: MockFixturePredictionRequest) -> PredictionResponse:
+    target = _parse_date(payload.match_date)
+    try:
+        sync = _sync_league_matches(league_slug, target, target, force_refresh=False)
+        loaded = model_registry.get(league_slug)
+        raw_fixture = _mock_fixture_to_footystats_raw(payload)
+        built = build_live_feature_rows_from_footystats(
+            league_slug,
+            [raw_fixture],
+            sync["completed_raw"],
+            loaded.raw_feature_columns,
+        )
+        rows = [FeatureRow(**row) for row in built]
+        run_id = str(uuid4())
+        candidates = predict_feature_rows(league_slug, rows, generation_run_id=run_id)
+        return PredictionResponse(
+            league_slug=league_slug,
+            model_version=loaded.model_version,
+            date=target,
+            candidates=candidates,
+            tickets=[],
+            single_match_insights=[candidate for candidate in candidates if candidate.ticket_eligible],
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc

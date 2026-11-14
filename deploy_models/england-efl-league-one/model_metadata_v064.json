@@ -1,0 +1,37 @@
+{
+  "league_slug": "england-efl-league-one",
+  "league_name": "England EFL League One",
+  "model_version": "england-efl-league-one-v0.6.4-explainable",
+  "rows_total": 5975,
+  "train_rows": 4861,
+  "validation_rows": 557,
+  "test_rows": 557,
+  "seasons": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "odds_available_rate": 0.9968200836820084,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "sklearn_training_version": "1.6.1",
+  "candidate_only": true,
+  "source_archive": "Rest.zip",
+  "footystats_season_id": 17180,
+  "division_assignment": "dedicated league CSV source"
+}

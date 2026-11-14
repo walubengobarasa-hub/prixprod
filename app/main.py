@@ -25,6 +25,9 @@ from app.config import settings, model_root_path, storage_status
 from app.data_adapter import is_cancelled_status, is_completed_status, normalize_fixture_result, normalize_footystats_match
 from app.feature_builder import build_live_feature_rows_from_footystats
 from app.footystats_client import footystats_client
+# Populate the persistent model root from Git BEFORE LeagueRegistry is loaded.
+from app.git_model_sync import sync_git_models
+_PRIX_GIT_SYNC_STATUS = sync_git_models()
 from app.league_registry import league_registry
 from app.model_registry import model_registry
 from app.predictor import predict_feature_rows, _market_status
@@ -595,6 +598,12 @@ def export_registry_metadata() -> dict[str, Any]:
             "uses_league_strength": meta.get("uses_league_strength", False),
         })
     return {"leagues": leagues, "registry_errors": league_registry.validate()}
+
+
+@app.get("/registry/git-sync-status", dependencies=[Depends(require_api_key)])
+def git_sync_status() -> dict[str, Any]:
+    """Result of automatic Git model sync during this process startup."""
+    return _PRIX_GIT_SYNC_STATUS
 
 
 @app.get("/registry/status", dependencies=[Depends(require_api_key)])

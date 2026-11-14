@@ -1,0 +1,70 @@
+{
+  "leagues": {
+    "england-championship": {
+      "display_name": "England Championship",
+      "league_code": "england-championship",
+      "model_version": "england-championship-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "england-championship",
+      "footystats_league_id": 17184,
+      "footystats_season_id": 17184
+    },
+    "england-efl-league-one": {
+      "display_name": "England EFL League One",
+      "league_code": "england-efl-league-one",
+      "model_version": "england-efl-league-one-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "england-efl-league-one",
+      "footystats_league_id": 17180,
+      "footystats_season_id": 17180
+    },
+    "england-efl-league-two": {
+      "display_name": "England EFL League Two",
+      "league_code": "england-efl-league-two",
+      "model_version": "england-efl-league-two-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "england-efl-league-two",
+      "footystats_league_id": 17185,
+      "footystats_season_id": 17185
+    },
+    "england-national-league": {
+      "display_name": "England National League",
+      "league_code": "england-national-league",
+      "model_version": "england-national-league-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "england-national-league",
+      "footystats_league_id": 17279,
+      "footystats_season_id": 17279
+    },
+    "england-national-league-north": {
+      "display_name": "England National League North",
+      "league_code": "england-national-league-north",
+      "model_version": "england-national-league-north-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "england-national-league-north",
+      "footystats_league_id": 17263,
+      "footystats_season_id": 17263
+    },
+    "england-national-league-south": {
+      "display_name": "England National League South",
+      "league_code": "england-national-league-south",
+      "model_version": "england-national-league-south-v0.6.4-explainable",
+      "enabled": true,
+      "competition_type": "league",
+      "model_family": "main_league",
+      "model_folder": "england-national-league-south",
+      "footystats_league_id": 17403,
+      "footystats_season_id": 17403
+    }
+  }
+}

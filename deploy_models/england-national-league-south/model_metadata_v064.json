@@ -1,0 +1,36 @@
+{
+  "league_slug": "england-national-league-south",
+  "league_name": "England National League South",
+  "model_version": "england-national-league-south-v0.6.4-explainable",
+  "rows_total": 4484,
+  "train_rows": 3389,
+  "validation_rows": 557,
+  "test_rows": 538,
+  "seasons": [
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
+  ],
+  "odds_available_rate": 0.6148528099910794,
+  "model_mode": "odds_aware",
+  "feature_count": 400,
+  "leakage_policy": "strict pre-match whitelist plus shifted lagged historical features only",
+  "explainability": {
+    "local_top_factors": "importance_weighted_feature_strength",
+    "reason_codes": true,
+    "goal_timing_estimates": true,
+    "winner_decision_estimates": true
+  },
+  "sklearn_training_version": "1.6.1",
+  "candidate_only": true,
+  "source_archive": "Rest.zip",
+  "footystats_season_id": 17403,
+  "division_assignment": "fixture-graph two-component split with city anchors"
+}
