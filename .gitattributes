@@ -1,3 +1,4 @@
 # Large serialized model files are stored as Git LFS objects, not ordinary Git blobs.
 *.pkl filter=lfs diff=lfs merge=lfs -text
 *.joblib filter=lfs diff=lfs merge=lfs -text
+deploy_models/** -text
