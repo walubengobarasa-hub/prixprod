@@ -1,0 +1,12 @@
+league_slug,task,status,classes,test_accuracy,accuracy_05,brier,log_loss
+england-national-league,over15,trained,"['0', '1']",0.800718132854578,0.800718132854578,0.17305398285798185,
+england-national-league,under15_risk,trained,"['0', '1']",0.800718132854578,0.800718132854578,0.17305398285798182,
+england-national-league,btts,trained,"['0', '1']",0.5637342908438061,0.5637342908438061,0.2454069937570437,
+england-national-league,over25,trained,"['0', '1']",0.5745062836624776,0.5745062836624776,0.2441568125879915,
+england-national-league,under25_risk,trained,"['0', '1']",0.5745062836624776,0.5745062836624776,0.2441568125879915,
+england-national-league,outcome,trained,"['AWAY_WIN', 'DRAW', 'HOME_WIN']",0.5206463195691203,,,0.9930214599103174
+england-national-league,favorite_win,trained,"['0.0', '1.0']",0.566003616636528,0.566003616636528,0.23881538586257625,
+england-national-league,favorite_avoid_defeat,trained,"['0.0', '1.0']",0.7649186256781193,0.7649186256781193,0.18420990231108347,
+england-national-league,draw_risk,trained,"['0', '1']",0.7648114901256733,0.7648114901256733,0.18856865076865495,
+england-national-league,first_goal_window,trained,"['00_15', '16_35', '36_60', '61_90', 'no_goal']",0.5224416517055656,,,1.2902995771885364
+england-national-league,winner_decision_window,trained,"['draw_no_winner', 'early_or_first_half', 'late_second_half', 'mid_match']",0.3590664272890485,,,1.3526196595398017

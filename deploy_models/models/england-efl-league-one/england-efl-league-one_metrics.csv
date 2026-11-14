@@ -1,0 +1,12 @@
+league_slug,task,status,classes,test_accuracy,accuracy_05,brier,log_loss
+england-efl-league-one,over15,trained,"['0', '1']",0.7271095152603232,0.7271095152603232,0.20683278310695719,
+england-efl-league-one,under15_risk,trained,"['0', '1']",0.7271095152603232,0.7271095152603232,0.20683278310695719,
+england-efl-league-one,btts,trained,"['0', '1']",0.5511669658886894,0.5511669658886894,0.24883005029960717,
+england-efl-league-one,over25,trained,"['0', '1']",0.5439856373429084,0.5439856373429084,0.24681321429062442,
+england-efl-league-one,under25_risk,trained,"['0', '1']",0.5439856373429084,0.5439856373429084,0.24681321429062442,
+england-efl-league-one,outcome,trained,"['AWAY_WIN', 'DRAW', 'HOME_WIN']",0.4919210053859964,,,1.0378114797662108
+england-efl-league-one,favorite_win,trained,"['0.0', '1.0']",0.572972972972973,0.572972972972973,0.24146562733391233,
+england-efl-league-one,favorite_avoid_defeat,trained,"['0.0', '1.0']",0.7297297297297297,0.7297297297297297,0.19625351901495947,
+england-efl-league-one,draw_risk,trained,"['0', '1']",0.7504488330341114,0.7504488330341114,0.20094302332724318,
+england-efl-league-one,first_goal_window,trained,"['00_15', '16_35', '36_60', '61_90', 'no_goal']",0.4542190305206463,,,1.3987342025170557
+england-efl-league-one,winner_decision_window,trained,"['draw_no_winner', 'early_or_first_half', 'late_second_half', 'mid_match']",0.3052064631956912,,,1.384107687143875

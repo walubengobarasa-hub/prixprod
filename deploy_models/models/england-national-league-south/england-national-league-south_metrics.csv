@@ -1,0 +1,12 @@
+league_slug,task,status,classes,test_accuracy,accuracy_05,brier,log_loss
+england-national-league-south,over15,trained,"['0', '1']",0.7267657992565055,0.7267657992565055,0.20659683566031242,
+england-national-league-south,under15_risk,trained,"['0', '1']",0.7267657992565055,0.7267657992565055,0.20659683566031242,
+england-national-league-south,btts,trained,"['0', '1']",0.49070631970260226,0.49070631970260226,0.25130259627214246,
+england-national-league-south,over25,trained,"['0', '1']",0.5074349442379182,0.5074349442379182,0.2511226004222722,
+england-national-league-south,under25_risk,trained,"['0', '1']",0.5074349442379182,0.5074349442379182,0.2511226004222722,
+england-national-league-south,outcome,trained,"['AWAY_WIN', 'DRAW', 'HOME_WIN']",0.48698884758364314,,,1.057775543242837
+england-national-league-south,favorite_win,trained,"['0.0', '1.0']",0.5669291338582677,0.5669291338582677,0.24064942442630766,
+england-national-league-south,favorite_avoid_defeat,trained,"['0.0', '1.0']",0.7112860892388452,0.7112860892388452,0.207078713980439,
+england-national-league-south,draw_risk,trained,"['0', '1']",0.7397769516728625,0.7397769516728625,0.20220655952220143,
+england-national-league-south,first_goal_window,trained,"['00_15', '16_35', '36_60', '61_90', 'no_goal']",0.44981412639405205,,,1.4011258868416239
+england-national-league-south,winner_decision_window,trained,"['draw_no_winner', 'early_or_first_half', 'late_second_half', 'mid_match', 'unknown_decision']",0.3066914498141264,,,1.3851917227580177
